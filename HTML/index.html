@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paw Seva — Care For Every Paw</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>" />
+    <link rel="stylesheet" href="../CSS/style.css" />
+    <style>
+      #toast {
+        position: fixed; bottom: 28px; right: 28px;
+        background: #2f6b57; color: white;
+        padding: 13px 24px; border-radius: 12px;
+        font-size: 14px; font-weight: 600;
+        z-index: 9999; opacity: 0;
+        transform: translateY(14px);
+        transition: all 0.35s; pointer-events: none;
+        font-family: 'DM Sans', sans-serif;
+      }
+      #toast.show { opacity: 1; transform: translateY(0); }
+      #quoteText { transition: opacity 0.3s ease; }
+    </style>
+  </head>
+  <body>
+
+    <!-- ===== COMMUNITY UPLOAD STRIP (Top of page) ===== -->
+    <div class="community-strip" id="communityStrip">
+      <div class="community-strip-inner">
+        <span class="community-strip-icon">📸</span>
+        <span class="community-strip-text">Share your animal feeding or rescue story with the community!</span>
+        <button class="community-strip-btn" onclick="openUploadModal()">Upload Photo</button>
+      </div>
+      <button class="community-strip-close" onclick="document.getElementById('communityStrip').style.display='none'">×</button>
+    </div>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+      <div class="logo">🐾 <span>Paw Seva</span></div>
+
+      <div class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#community">Community</a>
+        <a href="#services">Services</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#contact">Contact</a>
+        <a href="dashboard.html" id="dashLink" style="display:none; color:var(--accent)">My Dashboard</a>
+        <a href="admin.html" id="adminNavLink" style="display:none; color:var(--accent)">⚙️ Admin</a>
+      </div>
+
+      <div class="nav-right">
+        <!-- Auth buttons (shown when logged out) -->
+        <div class="auth-btns" id="authBtns">
+          <button class="btn-join-paw" onclick="openModal('signup')">🐾 Join Paw Seva</button>
+        </div>
+
+        <!-- User info (shown when logged in) -->
+        <div class="user-nav" id="userNav">
+          <div class="user-avatar-nav" id="userNavAvatar">P</div>
+          <span class="user-name-nav" id="userNavName">User</span>
+          <button class="btn-logout-nav" onclick="doLogout()">Logout</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <div class="hero-badge">🐾 India's Animal Welfare Platform</div>
+        <h1>Give Every Paw a <em>Fighting Chance</em></h1>
+        <p class="hero-sub">
+          Donate, volunteer, feed, and support NGOs dedicated to protecting street animals across India.
+        </p>
+        <p class="hero-quote">"Be their voice. Be their hope. Be their hero."</p>
+        <div class="hero-buttons">
+          <button class="btn-primary join-btn">Join Paw Seva 🐾</button>
+          <button class="btn-outline" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">
+            How You Can Help
+          </button>
+        </div>
+      </div>
+      <!-- Floating paw prints decoration -->
+      <div class="hero-paws">
+        <span class="fp fp1">🐾</span>
+        <span class="fp fp2">🐾</span>
+        <span class="fp fp3">🐾</span>
+        <span class="fp fp4">🐾</span>
+      </div>
+    </section>
+
+    <!-- ===== STATS STRIP ===== -->
+    <div class="stats-strip">
+      <div class="stat-item">
+        <h3 class="counter" data-target="2300">0</h3>
+        <p>Animals Helped</p>
+      </div>
+      <div class="stat-item">
+        <h3 class="counter" data-target="560">0</h3>
+        <p>Active Volunteers</p>
+      </div>
+      <div class="stat-item">
+        <h3 class="counter" data-target="840">0</h3>
+        <p>₹ Lakhs Raised</p>
+      </div>
+      <div class="stat-item">
+        <h3 class="counter" data-target="48">0</h3>
+        <p>Partner NGOs</p>
+      </div>
+      <div class="stat-item">
+        <h3 class="counter" data-target="12">0</h3>
+        <p>Cities Active</p>
+      </div>
+    </div>
+
+    <!-- ===== RATAN TATA INSPIRATION SECTION ===== -->
+    <section class="ratan-section" id="inspiration">
+      <div class="ratan-inner">
+        <div class="ratan-text">
+          <div class="section-tag">Inspired By</div>
+          <h2 class="section-title" style="color:white;">A Legacy of <em style="color:var(--accent)">Compassion</em></h2>
+          <p class="ratan-desc">
+            Ratan Tata — India's most beloved industrialist — was not just a business icon.
+            He was a lifelong champion of stray dogs and animal welfare. He set up shelter facilities inside
+            Tata headquarters, personally funded animal hospitals, and never missed an opportunity to advocate
+            for street animals. His final social media posts were often about rescuing dogs.
+          </p>
+          <blockquote class="ratan-quote">
+            "I may have lived a life less ordinary, but the dogs who came into my life made it extraordinary."
+          </blockquote>
+          <cite class="ratan-cite">— Ratan Tata</cite>
+          <div class="ratan-badges">
+            <span class="ratan-badge">🐕 Animal Welfare Advocate</span>
+            <span class="ratan-badge">🏥 Funded Dog Hospitals</span>
+            <span class="ratan-badge">❤️ Sheltered Strays</span>
+          </div>
+        </div>
+        <div class="ratan-images">
+          <div class="ratan-img-card ratan-main">
+            <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500&q=80" alt="Dog being cared for" />
+            <div class="ratan-img-label">🐾 Animals Deserve Love</div>
+          </div>
+          <div class="ratan-img-mini-grid">
+            <div class="ratan-img-card ratan-mini">
+              <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&q=80" alt="Street dog" />
+            </div>
+            <div class="ratan-img-card ratan-mini">
+              <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=300&q=80" alt="Dogs" />
+            </div>
+            <div class="ratan-img-card ratan-mini">
+              <img src="https://images.unsplash.com/photo-1444212477490-ca407925329e?w=300&q=80" alt="Rescue dog" />
+            </div>
+            <div class="ratan-img-card ratan-mini">
+              <img src="https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?w=300&q=80" alt="Puppy" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== COMMUNITY ACTIVITY WALL ===== -->
+    <section id="community" class="community-section">
+      <div style="text-align:center">
+        <div class="section-tag">Community Wall</div>
+        <h2 class="section-title">Real Stories. Real Heroes. 🐾</h2>
+        <p class="section-sub" style="margin:0 auto 32px">
+          See what our Paw Seva family is doing across India. Share your feeding, rescue, and care stories!
+        </p>
+        <button class="btn-upload-story" onclick="openUploadModal()">
+          <i class="fas fa-camera"></i> Share Your Story
+        </button>
+      </div>
+
+      <div class="activity-wall" id="activityWall">
+        <!-- Will be populated by JS -->
+      </div>
+
+      <div style="text-align:center; margin-top:28px">
+        <button class="btn-outline-green" onclick="loadMorePosts()">Load More Stories ↓</button>
+      </div>
+    </section>
+
+    <!-- ===== HOW YOU CAN HELP ===== -->
+    <section class="section-alt" id="services">
+      <div style="text-align:center">
+        <div class="section-tag">Get Involved</div>
+        <h2 class="section-title">How You Can Help</h2>
+        <p class="section-sub" style="margin:0 auto 40px">Every role matters. Choose your way to make a difference.</p>
+      </div>
+
+      <div class="role-cards">
+        <div class="role-card" onclick="openModal('signup')">
+          <span class="role-icon">💰</span>
+          <h2>Donor</h2>
+          <p>Support animals with food, medicine & funds. Even a small contribution saves a life.</p>
+        </div>
+        <div class="role-card" onclick="openModal('signup')">
+          <span class="role-icon">🦸</span>
+          <h2>Volunteer</h2>
+          <p>Join rescue operations, transport injured animals, and bring hope to the helpless.</p>
+        </div>
+        <div class="role-card" onclick="openModal('signup')">
+          <span class="role-icon">🍲</span>
+          <h2>Feeder</h2>
+          <p>Commit to feeding street animals in your locality. Simple, daily, life-changing.</p>
+        </div>
+        <div class="role-card" onclick="openModal('signup')">
+          <span class="role-icon">🏥</span>
+          <h2>NGO Partner</h2>
+          <p>Partner your organization with Paw Seva to expand reach and impact across cities.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== INTERACTIVE MAP STRIP ===== -->
+    <div class="impact-strip">
+      <div class="impact-strip-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Indore</strong>
+          <span>480 animals helped</span>
+        </div>
+      </div>
+      <div class="impact-strip-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Bhopal</strong>
+          <span>310 animals helped</span>
+        </div>
+      </div>
+      <div class="impact-strip-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Mumbai</strong>
+          <span>620 animals helped</span>
+        </div>
+      </div>
+      <div class="impact-strip-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Delhi</strong>
+          <span>540 animals helped</span>
+        </div>
+      </div>
+      <div class="impact-strip-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Pune</strong>
+          <span>350 animals helped</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== QUOTE SECTION ===== -->
+    <section class="quote-section">
+      <blockquote id="quoteText">
+        "The greatness of a nation can be judged by the way its animals are treated."
+      </blockquote>
+      <cite id="quoteCite">— Mahatma Gandhi</cite>
+      <div class="quote-dots">
+        <div class="q-dot active" onclick="rotateQuote(0)"></div>
+        <div class="q-dot" onclick="rotateQuote(1)"></div>
+        <div class="q-dot" onclick="rotateQuote(2)"></div>
+        <div class="q-dot" onclick="rotateQuote(3)"></div>
+        <div class="q-dot" onclick="rotateQuote(4)"></div>
+      </div>
+    </section>
+
+    <!-- ===== GALLERY ===== -->
+    <section id="gallery">
+      <div style="text-align:center">
+        <div class="section-tag">Happy Paws</div>
+        <h2 class="section-title">Compassion Has Four Legs</h2>
+        <p class="section-sub" style="margin:0 auto 40px">Stories of rescue, hope, and love from the streets.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="gallery-item">
+          <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80" alt="Street dog" loading="lazy" />
+          <div class="gallery-overlay"><h3>Feed a Dog Today</h3><p>Support Street Animals</p></div>
+        </div>
+        <div class="gallery-item">
+          <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=80" alt="Rescue" loading="lazy" />
+          <div class="gallery-overlay"><h3>Rescue Support</h3><p>Help Injured Animals</p></div>
+        </div>
+        <div class="gallery-item">
+          <img src="https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?w=600&q=80" alt="Adopt" loading="lazy" />
+          <div class="gallery-overlay"><h3>Adopt Love</h3><p>Give Them a Home</p></div>
+        </div>
+        <div class="gallery-item">
+          <img src="https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=600&q=80" alt="Care" loading="lazy" />
+          <div class="gallery-overlay"><h3>Care & Shelter</h3><p>Safe Space for Animals</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer id="contact">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">🐾 <span>Paw Seva</span></div>
+          <p class="footer-about">
+            Paw Seva is dedicated to caring for street animals through feeding drives, rescue operations,
+            and medical support across India. Together, we build a kinder world.
+          </p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+            <a href="#" style="background:#25D366"><i class="fab fa-whatsapp"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <a href="#home">Home</a>
+          <a href="#community">Community Wall</a>
+          <a href="#services">Services</a>
+          <a href="#gallery">Gallery</a>
+          <a href="dashboard.html">My Dashboard</a>
+        </div>
+        <div class="footer-col" id="footerContact">
+          <h4>Contact Us</h4>
+          <p>📍 Bhopal (MP), India</p>
+          <p>📧 pawseva@email.com</p>
+          <p>📞 +91 XXXXX XXXXX</p>
+          <p>💬 WhatsApp Support</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Compassion for every paw. © 2026 Paw Seva</span>
+        <span>Made with ❤️ for street animals · Inspired by Ratan Tata</span>
+      </div>
+    </footer>
+
+    <!-- ===== AUTH MODAL ===== -->
+    <div class="modal-overlay" id="authModal">
+      <div class="modal-box">
+        <span class="modal-close" onclick="closeModal()">×</span>
+        <div class="modal-logo">🐾 <span>Paw Seva</span></div>
+
+        <div class="tab-row">
+          <button class="tab-btn active" id="tabSignup" onclick="showSignup()">Sign Up</button>
+          <button class="tab-btn" id="tabLogin" onclick="showLogin()">Login</button>
+        </div>
+
+        <!-- SIGN UP FORM -->
+        <div id="signupForm">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="su_name" placeholder="Your full name" />
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <div class="phone-input-row">
+              <span class="phone-prefix">🇮🇳 +91</span>
+              <input type="tel" id="su_phone" placeholder="10-digit mobile number" maxlength="10" />
+            </div>
+          </div>
+          <div class="form-group" id="su_otp_group" style="display:none">
+            <label>Enter OTP</label>
+            <div class="otp-row">
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+            </div>
+            <p class="otp-hint">OTP sent to +91 <span id="su_phone_display"></span> · <a onclick="resendOTP('su')">Resend</a></p>
+          </div>
+          <div class="form-group">
+            <label>Email (Optional)</label>
+            <input type="email" id="su_email" placeholder="you@email.com (optional)" />
+          </div>
+          <div class="form-group">
+            <label>I am a</label>
+            <div class="role-grid">
+              <label class="role-opt"><input type="radio" name="su_role" value="Donor" /> 💰 Donor</label>
+              <label class="role-opt"><input type="radio" name="su_role" value="Volunteer" /> 🦸 Volunteer</label>
+              <label class="role-opt"><input type="radio" name="su_role" value="Feeder" /> 🍲 Feeder</label>
+              <label class="role-opt"><input type="radio" name="su_role" value="NGO" /> 🏥 NGO</label>
+            </div>
+          </div>
+          <div id="su_error" style="color:#e05454;font-size:13px;margin-bottom:8px;display:none"></div>
+          <button class="btn-form" id="su_btn" onclick="handleSignupOTP()">Get OTP 📲</button>
+
+          <div class="divider-or"><span>or sign up with</span></div>
+          <div class="social-login-row">
+            <button class="social-login-btn google-btn" onclick="loginWithGoogle()">
+              <i class="fab fa-google"></i> Google
+            </button>
+            <button class="social-login-btn insta-btn" onclick="loginWithInstagram()">
+              <i class="fab fa-instagram"></i> Instagram
+            </button>
+            <button class="social-login-btn wa-btn" onclick="loginWithWhatsApp()">
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </button>
+          </div>
+
+          <p class="form-switch">Already have an account? <a onclick="showLogin()">Login</a></p>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="loginForm" class="hidden">
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <div class="phone-input-row">
+              <span class="phone-prefix">🇮🇳 +91</span>
+              <input type="tel" id="li_phone" placeholder="10-digit mobile number" maxlength="10" />
+            </div>
+          </div>
+          <div class="form-group" id="li_otp_group" style="display:none">
+            <label>Enter OTP</label>
+            <div class="otp-row">
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+              <input class="otp-box" type="text" maxlength="1" />
+            </div>
+            <p class="otp-hint">OTP sent to +91 <span id="li_phone_display"></span> · <a onclick="resendOTP('li')">Resend</a></p>
+          </div>
+          <div id="li_error" style="color:#e05454;font-size:13px;margin-bottom:8px;display:none"></div>
+          <button class="btn-form" id="li_btn" onclick="handleLoginOTP()">Get OTP 📲</button>
+
+          <div class="divider-or"><span>or login with</span></div>
+          <div class="social-login-row">
+            <button class="social-login-btn google-btn" onclick="loginWithGoogle()">
+              <i class="fab fa-google"></i> Google
+            </button>
+            <button class="social-login-btn insta-btn" onclick="loginWithInstagram()">
+              <i class="fab fa-instagram"></i> Instagram
+            </button>
+            <button class="social-login-btn wa-btn" onclick="loginWithWhatsApp()">
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </button>
+          </div>
+
+          <p class="form-switch">Don't have an account? <a onclick="showSignup()">Sign Up</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHOTO UPLOAD MODAL ===== -->
+    <div class="modal-overlay" id="uploadModal">
+      <div class="modal-box upload-modal-box">
+        <span class="modal-close" onclick="closeUploadModal()">×</span>
+        <div class="modal-logo">📸 <span>Share Your Story</span></div>
+        <p style="text-align:center;color:#666;font-size:14px;margin-bottom:20px">
+          Share your animal feeding, rescue, or care activity with the Paw Seva community!
+        </p>
+
+        <div class="upload-drop-zone" id="uploadDropZone" onclick="document.getElementById('photoFileInput').click()">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click or drag to upload photo</p>
+          <span>JPG, PNG up to 10MB</span>
+        </div>
+        <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhotoSelect(event)" />
+
+        <div id="photoPreviewArea" style="display:none;margin:16px 0;text-align:center">
+          <img id="photoPreview" style="max-width:100%;max-height:200px;border-radius:10px;object-fit:cover" />
+        </div>
+
+        <div class="form-group" style="margin-top:14px">
+          <label>Activity Type</label>
+          <select id="activityType">
+            <option value="feeding">🍲 Feeding Animals</option>
+            <option value="rescue">🚨 Rescue Operation</option>
+            <option value="medical">🏥 Medical Care</option>
+            <option value="adoption">🏠 Adoption Drive</option>
+            <option value="shelter">🏕️ Shelter Setup</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="uploaderName" placeholder="Your name or community name" />
+        </div>
+        <div class="form-group">
+          <label>Caption / Story</label>
+          <textarea id="activityCaption" rows="3" placeholder="Tell us your story… e.g. Fed 12 street dogs in Vijay Nagar today!" style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical;outline:none"></textarea>
+        </div>
+        <div class="form-group">
+          <label>City / Location</label>
+          <input type="text" id="activityLocation" placeholder="e.g. Indore, MP" />
+        </div>
+
+        <div id="upload_error" style="color:#e05454;font-size:13px;margin-bottom:8px;display:none"></div>
+        <button class="btn-form" onclick="submitActivity()">Share with Community 🐾</button>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+    <script src="../Js/main.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const u = getCurrentUser();
+        if (u) document.getElementById('dashLink').style.display = 'block';
+      });
+    </script>
+  </body>
+</html>

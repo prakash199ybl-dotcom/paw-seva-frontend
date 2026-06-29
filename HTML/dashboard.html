@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paw Seva — My Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>" />
+    <link rel="stylesheet" href="../CSS/dashboard.css" />
+    <style>
+      #toast {
+        position: fixed; bottom: 24px; right: 24px;
+        background: #2f6b57; color: white;
+        padding: 12px 22px; border-radius: 10px;
+        font-size: 14px; font-weight: 600;
+        z-index: 9999; opacity: 0;
+        transform: translateY(12px); transition: all 0.3s;
+        pointer-events: none; font-family: 'DM Sans', sans-serif;
+      }
+      #toast.show { opacity: 1; transform: translateY(0); }
+
+      /* Settings panel in dashboard */
+      .settings-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55); z-index: 2000;
+        justify-content: center; align-items: center; padding: 20px;
+        backdrop-filter: blur(4px);
+      }
+      .settings-overlay.open { display: flex; }
+      .settings-panel {
+        background: #f7fbf8; width: 100%; max-width: 520px;
+        border-radius: 18px; padding: 32px 28px;
+        max-height: 90vh; overflow-y: auto;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+        animation: fadeUp 0.3s ease;
+        position: relative;
+      }
+      @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+      .settings-panel-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 20px; font-weight: 700; color: #1e4d3f;
+        margin-bottom: 22px; display: flex; align-items: center; gap: 10px;
+      }
+      .settings-close {
+        position: absolute; top: 16px; right: 20px;
+        font-size: 24px; cursor: pointer; color: #5a6a63;
+        background: none; border: none;
+      }
+      .settings-close:hover { color: #1e4d3f; }
+      .s-section { margin-bottom: 24px; }
+      .s-section-title {
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1px; color: #4f8c74; margin-bottom: 14px;
+        padding-bottom: 8px; border-bottom: 1.5px solid #d4ead8;
+      }
+      .s-field { margin-bottom: 12px; }
+      .s-field label {
+        display: block; font-size: 12px; font-weight: 600;
+        color: #5a6a63; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;
+      }
+      .s-field input, .s-field select {
+        width: 100%; padding: 10px 13px;
+        border: 1.5px solid #d0ddd8; border-radius: 8px;
+        font-size: 14px; font-family: 'DM Sans', sans-serif;
+        outline: none; transition: border-color 0.2s; background: white; color: #1a1a1a;
+      }
+      .s-field input:focus, .s-field select:focus { border-color: #4f8c74; }
+      .s-toggle-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0; border-bottom: 1px solid #e8f0ea;
+      }
+      .s-toggle-row:last-child { border-bottom: none; }
+      .s-toggle-label { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+      .s-toggle-sub { font-size: 11px; color: #5a6a63; }
+      .toggle-switch { position: relative; display: inline-block; width: 42px; height: 23px; flex-shrink:0; }
+      .toggle-switch input { opacity: 0; width: 0; height: 0; }
+      .toggle-slider {
+        position: absolute; cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #ccc; border-radius: 23px; transition: background 0.25s;
+      }
+      .toggle-slider::before {
+        content: ''; position: absolute;
+        height: 17px; width: 17px; left: 3px; bottom: 3px;
+        background: white; border-radius: 50%; transition: transform 0.25s;
+      }
+      .toggle-switch input:checked + .toggle-slider { background: #4f8c74; }
+      .toggle-switch input:checked + .toggle-slider::before { transform: translateX(19px); }
+      .s-save-btn {
+        width: 100%; padding: 12px; background: #1e4d3f; color: white;
+        border: none; border-radius: 9px; font-size: 14px;
+        font-family: 'DM Sans', sans-serif; font-weight: 600;
+        cursor: pointer; transition: all 0.2s; margin-top: 6px;
+      }
+      .s-save-btn:hover { background: #2f6b57; }
+      .s-danger-btn {
+        width: 100%; padding: 10px; background: rgba(224,84,84,0.08);
+        border: 1px solid rgba(224,84,84,0.3); color: #e05454;
+        border-radius: 9px; font-size: 13px;
+        font-family: 'DM Sans', sans-serif; font-weight: 600;
+        cursor: pointer; transition: all 0.2s; margin-top: 8px;
+      }
+      .s-danger-btn:hover { background: rgba(224,84,84,0.18); }
+
+      /* Share activity button in dashboard */
+      .share-activity-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 20px; background: #1e4d3f; color: white;
+        border: none; border-radius: 22px; font-size: 13px;
+        font-family: 'DM Sans', sans-serif; font-weight: 600;
+        cursor: pointer; transition: all 0.2s;
+        box-shadow: 0 3px 12px rgba(30,77,63,0.2);
+      }
+      .share-activity-btn:hover { background: #2f6b57; transform: translateY(-1px); }
+    </style>
+  </head>
+  <body>
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">🐾 <span>Paw Seva</span></div>
+      <nav class="sidebar-nav">
+        <a href="#" class="active"><span class="icon">📊</span> Dashboard</a>
+        <a href="#"><span class="icon">🚨</span> Rescue Requests</a>
+        <a href="#"><span class="icon">💰</span> Donations</a>
+        <a href="#"><span class="icon">🦸</span> Volunteers</a>
+        <a href="#"><span class="icon">📍</span> Feeding Spots</a>
+        <a href="#"><span class="icon">🏥</span> NGO Support</a>
+        <a href="#" onclick="openSettings(); return false;"><span class="icon">⚙️</span> Settings</a>
+        <a href="admin.html" id="adminBtn" style="display:none;background:rgba(244,162,77,0.15);color:var(--accent)">
+          <span class="icon">🛡️</span> Admin Panel
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-role-badge" id="sidebarRole">Donor</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:10px" id="sidebarUserName">User</div>
+        <button class="btn-logout-side" onclick="doLogout()">→ Logout</button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h3 id="topbarTitle">My Dashboard</h3>
+          <p>Welcome back! Here's your overview.</p>
+        </div>
+        <div class="topbar-right">
+          <button class="share-activity-btn" onclick="window.location.href='index.html#community'">
+            📸 Share Activity
+          </button>
+          <select class="role-selector" id="roleSelect" onchange="changeRole(this.value)">
+            <option value="Donor">Donor View</option>
+            <option value="Volunteer">Volunteer View</option>
+            <option value="Feeder">Feeder View</option>
+            <option value="NGO">NGO View</option>
+          </select>
+          <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+          <button class="icon-btn" title="Notifications" onclick="showToast('No new notifications!')">
+            🔔<span class="notif-badge"></span>
+          </button>
+          <button class="icon-btn" title="Settings" onclick="openSettings()">⚙️</button>
+          <div class="avatar-top" id="avatarTop">P</div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <div class="content">
+        <!-- Welcome banner -->
+        <div class="welcome-banner">
+          <div>
+            <h2>Welcome back, <span id="welcomeName">User</span>! ❤️</h2>
+            <p id="welcomeRole">Donor Dashboard — Here's what's happening today.</p>
+          </div>
+          <button onclick="window.location.href='index.html'"
+            style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;padding:10px 20px;border-radius:24px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:600;transition:0.2s"
+            onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+            ← Back to Home
+          </button>
+        </div>
+
+        <!-- Quote card -->
+        <div class="quote-card">
+          <p id="roleQuote">"Every rupee you give gives a paw a second chance at life."</p>
+          <cite>— Paw Seva</cite>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- Panels -->
+        <div class="panels">
+          <div class="panel">
+            <div class="panel-title" id="listTitle">🐕 Active Campaigns</div>
+            <div id="roleList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">📰 Recent Activity</div>
+            <div class="list-item">
+              <div><div class="item-text">New rescue alert nearby</div><div class="item-sub">5 mins ago</div></div>
+              <span style="font-size:12px;color:#4f8c74;font-weight:600">New</span>
+            </div>
+            <div class="list-item">
+              <div><div class="item-text">Feeding confirmed at Sector 10</div><div class="item-sub">1 hr ago</div></div>
+              <span style="font-size:12px;color:#7d8590">Done</span>
+            </div>
+            <div class="list-item">
+              <div><div class="item-text">Donation received: ₹500</div><div class="item-sub">2 hrs ago</div></div>
+              <span style="font-size:12px;color:#f4a24d;font-weight:600">+₹500</span>
+            </div>
+            <div class="list-item">
+              <div><div class="item-text">Volunteer Ananya joined</div><div class="item-sub">Yesterday</div></div>
+              <span style="font-size:12px;color:#7d8590">Info</span>
+            </div>
+            <div class="list-item">
+              <div><div class="item-text">Community photo uploaded</div><div class="item-sub">2 days ago</div></div>
+              <span style="font-size:12px;color:#4f8c74;font-weight:600">📸</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS PANEL ===== -->
+    <div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+      <div class="settings-panel">
+        <button class="settings-close" onclick="closeSettings()">×</button>
+        <div class="settings-panel-title">⚙️ Settings</div>
+
+        <!-- Profile -->
+        <div class="s-section">
+          <div class="s-section-title">My Profile</div>
+          <div class="s-field"><label>Full Name</label><input type="text" id="sp_name" placeholder="Your full name" /></div>
+          <div class="s-field"><label>Mobile Number</label><input type="tel" id="sp_phone" placeholder="+91 XXXXX XXXXX" /></div>
+          <div class="s-field"><label>City</label><input type="text" id="sp_city" placeholder="Your city" /></div>
+          <div class="s-field"><label>My Role</label>
+            <select id="sp_role">
+              <option value="Donor">💰 Donor</option>
+              <option value="Volunteer">🦸 Volunteer</option>
+              <option value="Feeder">🍲 Feeder</option>
+              <option value="NGO">🏥 NGO</option>
+            </select>
+          </div>
+          <button class="s-save-btn" onclick="saveProfileSettings()">Save Profile</button>
+        </div>
+
+        <!-- Notifications -->
+        <div class="s-section">
+          <div class="s-section-title">Notifications</div>
+          <div class="s-toggle-row">
+            <div><div class="s-toggle-label">Rescue Alerts</div><div class="s-toggle-sub">Alert when rescue needed nearby</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="pn_rescue" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="s-toggle-row">
+            <div><div class="s-toggle-label">Feeding Reminders</div><div class="s-toggle-sub">Daily feeding schedule reminder</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="pn_feeding" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="s-toggle-row">
+            <div><div class="s-toggle-label">Donation Updates</div><div class="s-toggle-sub">Receipts and campaign updates</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="pn_donation" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="s-toggle-row">
+            <div><div class="s-toggle-label">Community Posts</div><div class="s-toggle-sub">When someone posts an activity</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="pn_community" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <button class="s-save-btn" style="margin-top:14px" onclick="saveNotifSettings()">Save Notification Preferences</button>
+        </div>
+
+        <!-- Appearance -->
+        <div class="s-section">
+          <div class="s-section-title">Appearance</div>
+          <div class="s-toggle-row">
+            <div><div class="s-toggle-label">Dark Mode</div><div class="s-toggle-sub">Switch to dark theme</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="sp_dark" onchange="toggleDarkFromSettings(this.checked)" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="s-field" style="margin-top:12px"><label>Language</label>
+            <select id="sp_lang">
+              <option value="en">English</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="mr">मराठी (Marathi)</option>
+            </select>
+          </div>
+          <button class="s-save-btn" onclick="saveAppearanceSettings()">Apply Appearance</button>
+        </div>
+
+        <!-- Account -->
+        <div class="s-section">
+          <div class="s-section-title">Account</div>
+          <div class="s-field"><label>Linked Mobile</label><input type="tel" id="sp_linkedPhone" placeholder="Mobile number" readonly style="background:#f0f0f0;color:#888" /></div>
+          <button class="s-save-btn" style="background:#e8f5e9;color:#1e4d3f;border:1.5px solid #c8dfd3" onclick="showToast('Change number: Coming soon!')">Change Mobile Number</button>
+          <button class="s-danger-btn" onclick="confirmDeleteAccount()">🗑️ Delete My Account</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+    <script src="../Js/dashboard.js"></script>
+    <script>
+      // ── Settings panel ─────────────────────────────────────────────────────
+      function openSettings() {
+        const u = getCurrentUser ? getCurrentUser() : JSON.parse(localStorage.getItem('ps_current') || '{}');
+        if (u) {
+          document.getElementById('sp_name').value   = u.name  || '';
+          document.getElementById('sp_phone').value  = u.phone || '';
+          document.getElementById('sp_city').value   = u.city  || '';
+          if (u.role) document.getElementById('sp_role').value = u.role;
+          if (document.getElementById('sp_linkedPhone')) document.getElementById('sp_linkedPhone').value = u.phone || '';
+        }
+        document.getElementById('sp_dark').checked = document.body.classList.contains('dark');
+        document.getElementById('settingsOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSettings() {
+        document.getElementById('settingsOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      function saveProfileSettings() {
+        const name  = document.getElementById('sp_name').value.trim();
+        const phone = document.getElementById('sp_phone').value.trim();
+        const city  = document.getElementById('sp_city').value.trim();
+        const role  = document.getElementById('sp_role').value;
+
+        const u = JSON.parse(localStorage.getItem('ps_current') || '{}');
+        const updated = { ...u, name, phone, city, role };
+        localStorage.setItem('ps_current', JSON.stringify(updated));
+
+        // Update UI
+        const nameEl = document.getElementById('welcomeName');
+        if (nameEl) nameEl.textContent = name.split(' ')[0];
+        const sidebarName = document.getElementById('sidebarUserName');
+        if (sidebarName) sidebarName.textContent = name;
+        const sidebarRole = document.getElementById('sidebarRole');
+        if (sidebarRole) sidebarRole.textContent = role;
+        const avatar = document.getElementById('avatarTop');
+        if (avatar) avatar.textContent = name.charAt(0).toUpperCase();
+
+        showToast('Profile updated! ✓');
+      }
+
+      function saveNotifSettings() { showToast('Notification preferences saved! ✓'); }
+
+      function toggleDarkFromSettings(isDark) {
+        document.body.classList.toggle('dark', isDark);
+        localStorage.setItem('ps_dark', isDark ? '1' : '');
+      }
+
+      function saveAppearanceSettings() {
+        showToast('Appearance settings saved! ✓');
+        closeSettings();
+      }
+
+      function confirmDeleteAccount() {
+        if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
+          localStorage.removeItem('ps_current');
+          localStorage.removeItem('ps_token');
+          showToast('Account deleted. Redirecting...');
+          setTimeout(() => window.location.href = 'index.html', 1800);
+        }
+      }
+
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
+    </script>
+  </body>
+</html>
