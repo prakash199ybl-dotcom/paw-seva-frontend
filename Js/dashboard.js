@@ -3,7 +3,8 @@
 //   User dashboard wired to real backend API
 // ============================================================
 
-const API = 'http://localhost:5000/api';
+// const API = 'http://localhost:5000/api';
+const API = 'https://paw-seva-backend.onrender.com/api';
 
 // ── Token / User helpers (same as main.js) ────────────────────────────────────
 function getToken()          { return localStorage.getItem('ps_token'); }

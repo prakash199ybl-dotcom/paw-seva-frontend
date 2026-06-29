@@ -3,7 +3,8 @@
 //   Full admin panel with Settings, section nav, community moderation
 // ============================================================
 
-const API = 'http://localhost:5000/api';
+// const API = 'http://localhost:5000/api';
+const API = 'https://paw-seva-backend.onrender.com/api';
 
 function getToken()          { return localStorage.getItem('ps_token'); }
 function setToken(t)         { localStorage.setItem('ps_token', t); }

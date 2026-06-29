@@ -3,7 +3,8 @@
 //   OTP login, Social auth, Community wall, Animated counters
 // ============================================================
 
-const API = 'http://localhost:5000/api';
+// const API = 'http://localhost:5000/api';
+const API = 'https://paw-seva-backend.onrender.com/api';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
 function getToken()          { return localStorage.getItem('ps_token'); }
