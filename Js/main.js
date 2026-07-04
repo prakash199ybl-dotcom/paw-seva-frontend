@@ -393,46 +393,130 @@ function createActivityCard(activity) {
   `;
 }
 
-function renderActivityWall() {
+// function renderActivityWall() {
+//   const wall = document.getElementById('activityWall');
+//   if (!wall) return;
+//   const all = [...userActivities, ...sampleActivities];
+//   const toShow = all.slice(0, displayedCount + 6);
+//   wall.innerHTML = toShow.map(createActivityCard).join('');
+//   displayedCount = toShow.length;
+// }
+
+// function loadMorePosts() {
+//   displayedCount += 3;
+//   renderActivityWall();
+// }
+
+// function toggleLike(id, btn) {
+//   const liked = JSON.parse(localStorage.getItem('ps_liked') || '[]');
+//   const all = [...userActivities, ...sampleActivities];
+//   const activity = all.find(a => a.id === id);
+//   if (!activity) return;
+//   if (liked.includes(id)) {
+//     liked.splice(liked.indexOf(id), 1);
+//     activity.likes--;
+//     btn.classList.remove('liked');
+//   } else {
+//     liked.push(id);
+//     activity.likes++;
+//     btn.classList.add('liked');
+//   }
+//   btn.textContent = `❤️ ${activity.likes} Likes`;
+//   localStorage.setItem('ps_liked', JSON.stringify(liked));
+// }
+
+// function shareActivity(name, caption) {
+//   if (navigator.share) {
+//     navigator.share({ title: 'Paw Seva Activity', text: `${name}: ${caption}`, url: window.location.href });
+//   } else {
+//     navigator.clipboard?.writeText(`${name}: ${caption} — Paw Seva`);
+//     showToast('Activity link copied to clipboard! 🔗');
+//   }
+// }
+
+
+async function renderActivityWall() {
   const wall = document.getElementById('activityWall');
   if (!wall) return;
-  const all = [...userActivities, ...sampleActivities];
-  const toShow = all.slice(0, displayedCount + 6);
-  wall.innerHTML = toShow.map(createActivityCard).join('');
-  displayedCount = toShow.length;
-}
 
-function loadMorePosts() {
-  displayedCount += 3;
-  renderActivityWall();
-}
+  wall.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#4f8c74">🐾 Loading stories...</div>';
 
-function toggleLike(id, btn) {
-  const liked = JSON.parse(localStorage.getItem('ps_liked') || '[]');
-  const all = [...userActivities, ...sampleActivities];
-  const activity = all.find(a => a.id === id);
-  if (!activity) return;
-  if (liked.includes(id)) {
-    liked.splice(liked.indexOf(id), 1);
-    activity.likes--;
-    btn.classList.remove('liked');
-  } else {
-    liked.push(id);
-    activity.likes++;
-    btn.classList.add('liked');
-  }
-  btn.textContent = `❤️ ${activity.likes} Likes`;
-  localStorage.setItem('ps_liked', JSON.stringify(liked));
-}
+  try {
+    const response = await fetch(`${API}/activities`);
+    const data     = await response.json();
 
-function shareActivity(name, caption) {
-  if (navigator.share) {
-    navigator.share({ title: 'Paw Seva Activity', text: `${name}: ${caption}`, url: window.location.href });
-  } else {
-    navigator.clipboard?.writeText(`${name}: ${caption} — Paw Seva`);
-    showToast('Activity link copied to clipboard! 🔗');
+    if (data.success && data.activities.length > 0) {
+      // Server se aayi activities
+      const cards = data.activities.map(a => createActivityCard({
+        id:       a._id,
+        type:     a.type,
+        name:     a.name,
+        location: a.location,
+        caption:  a.caption,
+        image:    a.image,
+        time:     timeAgo(a.createdAt),
+        likes:    a.likes,
+        likedBy:  a.likedBy || [],
+      }));
+      wall.innerHTML = cards.join('');
+    } else {
+      throw new Error('No activities from server');
+    }
+  } catch {
+    // Fallback — localStorage + sample data
+    const stored = JSON.parse(localStorage.getItem('ps_activities') || '[]');
+    const all    = [...stored, ...sampleActivities];
+    wall.innerHTML = all.slice(0, 6).map(createActivityCard).join('');
   }
 }
+
+async function toggleLike(id, btn) {
+  const userId = getCurrentUser()?.id || localStorage.getItem('ps_device_id') || (() => {
+    const d = 'device_' + Date.now();
+    localStorage.setItem('ps_device_id', d);
+    return d;
+  })();
+
+  try {
+    const res  = await fetch(`${API}/activities/${id}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.textContent = `❤️ ${data.likes} Likes`;
+      data.liked ? btn.classList.add('liked') : btn.classList.remove('liked');
+    }
+  } catch {
+    // Offline fallback
+    const liked = JSON.parse(localStorage.getItem('ps_liked') || '[]');
+    const isLiked = liked.includes(id);
+    if (isLiked) {
+      liked.splice(liked.indexOf(id), 1);
+      btn.classList.remove('liked');
+    } else {
+      liked.push(id);
+      btn.classList.add('liked');
+    }
+    localStorage.setItem('ps_liked', JSON.stringify(liked));
+    const count = parseInt(btn.textContent.match(/\d+/)?.[0] || 0);
+    btn.textContent = `❤️ ${isLiked ? count - 1 : count + 1} Likes`;
+  }
+}
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1)  return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  if (hrs < 24)  return `${hrs} hr ago`;
+  return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+
 
 // ── Upload Modal ───────────────────────────────────────────────────────────────
 function openUploadModal() {
@@ -485,35 +569,102 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function submitActivity() {
+// function submitActivity() {
+//   const caption  = document.getElementById('activityCaption').value.trim();
+//   const location = document.getElementById('activityLocation').value.trim();
+//   const type     = document.getElementById('activityType').value;
+//   const nameVal  = document.getElementById('uploaderName').value.trim();
+//   const preview  = document.getElementById('photoPreview').src;
+
+//   if (!caption)  { showError('upload_error', 'Please add a caption for your story.'); return; }
+//   if (!location) { showError('upload_error', 'Please add your city/location.'); return; }
+//   if (!nameVal)  { showError('upload_error', 'Please add your name.'); return; }
+
+//   const u = getCurrentUser();
+//   const newActivity = {
+//     id: Date.now(),
+//     type,
+//     name: nameVal || (u ? u.name : 'Anonymous'),
+//     location,
+//     caption,
+//     image: preview && preview !== window.location.href ? preview : null,
+//     time: 'Just now',
+//     likes: 0,
+//   };
+//   userActivities.unshift(newActivity);
+//   localStorage.setItem('ps_activities', JSON.stringify(userActivities));
+//   displayedCount = 0;
+//   renderActivityWall();
+//   closeUploadModal();
+//   showToast('Your story has been shared with the community! 🐾');
+//   document.getElementById('community').scrollIntoView({ behavior: 'smooth' });
+// }
+
+// Submit activity function to work and add story for community//
+async function submitActivity() {
   const caption  = document.getElementById('activityCaption').value.trim();
   const location = document.getElementById('activityLocation').value.trim();
   const type     = document.getElementById('activityType').value;
   const nameVal  = document.getElementById('uploaderName').value.trim();
   const preview  = document.getElementById('photoPreview').src;
 
-  if (!caption)  { showError('upload_error', 'Please add a caption for your story.'); return; }
-  if (!location) { showError('upload_error', 'Please add your city/location.'); return; }
+  if (!caption)  { showError('upload_error', 'Please add a caption.'); return; }
+  if (!location) { showError('upload_error', 'Please add your location.'); return; }
   if (!nameVal)  { showError('upload_error', 'Please add your name.'); return; }
 
-  const u = getCurrentUser();
-  const newActivity = {
-    id: Date.now(),
-    type,
-    name: nameVal || (u ? u.name : 'Anonymous'),
-    location,
-    caption,
-    image: preview && preview !== window.location.href ? preview : null,
-    time: 'Just now',
-    likes: 0,
-  };
-  userActivities.unshift(newActivity);
-  localStorage.setItem('ps_activities', JSON.stringify(userActivities));
-  displayedCount = 0;
-  renderActivityWall();
-  closeUploadModal();
-  showToast('Your story has been shared with the community! 🐾');
-  document.getElementById('community').scrollIntoView({ behavior: 'smooth' });
+  const submitBtn = document.querySelector('#uploadModal .btn-form');
+  submitBtn.textContent = 'Sharing...';
+  submitBtn.disabled = true;
+
+  try {
+    // Image compress karo agar badi hai
+    let imageData = null;
+    if (preview && preview.startsWith('data:image')) {
+      imageData = preview.length > 500000
+        ? await compressImage(preview, 0.5)
+        : preview;
+    }
+
+    const response = await fetch(`${API}/activities`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: nameVal, type, caption, location,
+        image: imageData,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      closeUploadModal();
+      showToast('Tumhari story share ho gayi! 🐾');
+      displayedCount = 0;
+      await renderActivityWall(); // Reload wall
+      document.getElementById('community').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      showError('upload_error', data.message || 'Upload failed. Try again.');
+    }
+  } catch (err) {
+
+    // Offline fallback 
+    const u = getCurrentUser();
+    const newActivity = {
+      id: Date.now(), type, name: nameVal, location, caption,
+      image: preview && preview.startsWith('data:') ? preview : null,
+      time: 'Just now', likes: 0,
+    };
+    const stored = JSON.parse(localStorage.getItem('ps_activities') || '[]');
+    stored.unshift(newActivity);
+    localStorage.setItem('ps_activities', JSON.stringify(stored));
+    displayedCount = 0;
+    renderActivityWall();
+    closeUploadModal();
+    showToast('Story saved locally! (Backend offline) 🐾');
+  } finally {
+    submitBtn.textContent = 'Share with Community 🐾';
+    submitBtn.disabled = false;
+  }
 }
 
 // ── Intersection observer for counter animation ────────────────────────────────
@@ -544,3 +695,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     getCurrentUser() ? (window.location.href = 'dashboard.html') : openModal('signup');
   });
 });
+
+function compressImage(base64, quality = 0.6) {
+  return new Promise((resolve) => {
+    const img  = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = h * MAX / w; w = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = base64;
+  });
+}
