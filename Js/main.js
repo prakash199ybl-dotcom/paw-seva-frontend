@@ -173,6 +173,7 @@ async function handleSignupOTP() {
 }
 
 // ── Login OTP handler ──────────────────────────────────────────────────────────
+// ── Login OTP handler ─────────────────────────────────────────────────────────
 async function handleLoginOTP() {
   if (!otpState.li.sent) {
     const phone = document.getElementById('li_phone').value.trim();
@@ -190,7 +191,7 @@ async function handleLoginOTP() {
     document.getElementById('li_btn').textContent = 'Verify OTP ✓';
     showToast(`OTP sent to +91 ${phone} (Demo OTP: ${demoOTP})`);
     document.querySelector('#li_otp_group .otp-box').focus();
-  } else 
+  } else {
     const enteredOTP = getOTPValue('li');
     if (enteredOTP.length !== 6) { showError('li_error', 'Please enter the complete 6-digit OTP.'); return; }
     if (enteredOTP !== otpState.li.otp) { showError('li_error', 'Incorrect OTP. Please try again.'); return; }
@@ -212,40 +213,24 @@ async function handleLoginOTP() {
       } else {
         throw new Error('Backend OTP login not configured');
       }
-//     } catch {
-//       // Demo mode
-//       const demoUser = { id: Date.now(), name: `User ${phone.slice(-4)}`, phone, role: 'Donor' };
-//       setCurrentUser(demoUser);
-//       closeModal();
-//       updateNavForUser(demoUser);
-//       showToast(`Welcome back! 🐾`);
-//     } finally {
-//       setBtnLoading('li_btn', false, 'Verify OTP ✓');
-//     }
-//   }
-// }
-
-} catch {
-  // Demo mode — phone se user dhundo ya naya banao
-  const existingUser = getCurrentUser();
-  const demoUser = {
-    id:    Date.now(),
-    name:  existingUser?.name || `User ${phone.slice(-4)}`,
-    phone: phone,
-    role:  existingUser?.role || 'Donor'
-  };
-  setCurrentUser(demoUser);
-  closeModal();
-  updateNavForUser(demoUser);
-  showToast(`Welcome back! 🐾`);
+    } catch {
+      // Demo mode — existing user ka naam use karo
+      const existingUser = getCurrentUser();
+      const demoUser = {
+        id:    Date.now(),
+        name:  existingUser?.name || `User ${phone.slice(-4)}`,
+        phone: phone,
+        role:  existingUser?.role || 'Donor'
+      };
+      setCurrentUser(demoUser);
+      closeModal();
+      updateNavForUser(demoUser);
+      showToast(`Welcome back! 🐾`);
+    } finally {
+      setBtnLoading('li_btn', false, 'Verify OTP ✓');
+    }
+  }
 }
-
-
-function resendOTP(prefix) {
-  resetOTPState(prefix);
-  showToast('OTP state reset. Please request a new OTP.');
-}
-
 // ── Social login handlers ──────────────────────────────────────────────────────
 function loginWithGoogle() {
   showToast('Google OAuth: Configure in backend with passport-google-oauth20 📧');
