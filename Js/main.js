@@ -1,5 +1,5 @@
 // ============================================================
-//   PAW SEVA — main.js  (Updated v2.0)
+//   PAW SEVA — main.js  (Updated v3.0)
 //   OTP login, Social auth, Community wall, Animated counters
 // ============================================================
 
