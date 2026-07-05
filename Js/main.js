@@ -142,14 +142,31 @@ async function handleSignupOTP() {
       closeModal();
       updateNavForUser(data.user);
       showToast(`Welcome to Paw Seva, ${data.user.name.split(' ')[0]}! 🐾`);
+    // } catch {
+    //   // Demo mode when backend not available
+    //   const demoUser = { id: Date.now(), name, email, phone, role: roleEl.value };
+    //   setCurrentUser(demoUser);
+    //   closeModal();
+    //   updateNavForUser(demoUser);
+    //   showToast(`Welcome to Paw Seva, ${name.split(' ')[0]}! 🐾`);
+    // } 
+    
     } catch {
-      // Demo mode when backend not available
-      const demoUser = { id: Date.now(), name, email, phone, role: roleEl.value };
-      setCurrentUser(demoUser);
-      closeModal();
-      updateNavForUser(demoUser);
-      showToast(`Welcome to Paw Seva, ${name.split(' ')[0]}! 🐾`);
-    } finally {
+  const demoUser = {
+    id:    Date.now(),
+    name:  name,
+    email: email,
+    phone: phone,
+    role:  roleEl.value
+  };
+  setCurrentUser(demoUser);
+  setToken('demo_token_' + Date.now());
+  closeModal();
+  updateNavForUser(demoUser);
+  showToast(`Welcome to Paw Seva, ${name.split(' ')[0]}! 🐾`);
+}
+    
+    finally {
       setBtnLoading('su_btn', false, 'Verify OTP ✓');
     }
   }
@@ -195,18 +212,34 @@ async function handleLoginOTP() {
       } else {
         throw new Error('Backend OTP login not configured');
       }
-    } catch {
-      // Demo mode
-      const demoUser = { id: Date.now(), name: `User ${phone.slice(-4)}`, phone, role: 'Donor' };
-      setCurrentUser(demoUser);
-      closeModal();
-      updateNavForUser(demoUser);
-      showToast(`Welcome back! 🐾`);
-    } finally {
-      setBtnLoading('li_btn', false, 'Verify OTP ✓');
-    }
-  }
+//     } catch {
+//       // Demo mode
+//       const demoUser = { id: Date.now(), name: `User ${phone.slice(-4)}`, phone, role: 'Donor' };
+//       setCurrentUser(demoUser);
+//       closeModal();
+//       updateNavForUser(demoUser);
+//       showToast(`Welcome back! 🐾`);
+//     } finally {
+//       setBtnLoading('li_btn', false, 'Verify OTP ✓');
+//     }
+//   }
+// }
+
+} catch {
+  // Demo mode — phone se user dhundo ya naya banao
+  const existingUser = getCurrentUser();
+  const demoUser = {
+    id:    Date.now(),
+    name:  existingUser?.name || `User ${phone.slice(-4)}`,
+    phone: phone,
+    role:  existingUser?.role || 'Donor'
+  };
+  setCurrentUser(demoUser);
+  closeModal();
+  updateNavForUser(demoUser);
+  showToast(`Welcome back! 🐾`);
 }
+
 
 function resendOTP(prefix) {
   resetOTPState(prefix);
@@ -505,26 +538,33 @@ async function toggleLike(id, btn) {
   }
 }
 
-function timeAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hrs  = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1)  return 'Just now';
-  if (mins < 60) return `${mins} min ago`;
-  if (hrs < 24)  return `${hrs} hr ago`;
-  return `${days} day${days > 1 ? 's' : ''} ago`;
-}
+
 
 
 
 // ── Upload Modal ───────────────────────────────────────────────────────────────
+// function openUploadModal() {
+//   const u = getCurrentUser();
+//   if (!u) { openModal('signup'); showToast('Please join Paw Seva first to share your story!'); return; }
+//   document.getElementById('uploadModal').classList.add('open');
+//   document.body.style.overflow = 'hidden';
+// }
+
 function openUploadModal() {
   const u = getCurrentUser();
   if (!u) { openModal('signup'); showToast('Please join Paw Seva first to share your story!'); return; }
+
+  // Auto-fill name aur city agar user logged in hai
+  const nameField = document.getElementById('uploaderName');
+  const cityField = document.getElementById('activityLocation');
+  if (nameField && u.name) nameField.value = u.name;
+  if (cityField && u.city) cityField.value = u.city;
+
   document.getElementById('uploadModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+
+
 function closeUploadModal() {
   document.getElementById('uploadModal').classList.remove('open');
   document.body.style.overflow = '';
