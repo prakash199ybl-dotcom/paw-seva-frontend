@@ -453,6 +453,7 @@ function createActivityCard(activity) {
 // }
 
 
+// ── renderActivityWall — backend se load karo, fallback sample data ────────────
 async function renderActivityWall() {
   const wall = document.getElementById('activityWall');
   if (!wall) return;
@@ -460,26 +461,27 @@ async function renderActivityWall() {
   wall.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#4f8c74">🐾 Loading stories...</div>';
 
   try {
-    const response = await fetch(`${API}/activities`);
-    const data     = await response.json();
+    // CHANGE: cache bust karo har baar fresh data lo
+    const response = await fetch(`${API}/activities?t=${Date.now()}`);
+    if (!response.ok) throw new Error('Server error');
+    const data = await response.json();
 
-    if (data.success && data.activities.length > 0) {
-      // Server se aayi activities
+    if (data.success && data.activities && data.activities.length > 0) {
       const cards = data.activities.map(a => createActivityCard({
         id:       a._id,
-        type:     a.type,
-        name:     a.name,
-        location: a.location,
-        caption:  a.caption,
-        image:    a.image,
+        type:     a.type     || 'feeding',
+        name:     a.name     || 'Anonymous',
+        location: a.location || '—',
+        caption:  a.caption  || '',
+        image:    a.image    || null,
         time:     timeAgo(a.createdAt),
-        likes:    a.likes,
-        likedBy:  a.likedBy || [],
+        likes:    a.likes    || 0,
+        likedBy:  a.likedBy  || [],
       }));
       wall.innerHTML = cards.join('');
-    } else {
-      throw new Error('No activities from server');
+      return; // backend data mila — return karo
     }
+    throw new Error('No activities');
   } catch {
     // Fallback — localStorage + sample data
     const stored = JSON.parse(localStorage.getItem('ps_activities') || '[]');
