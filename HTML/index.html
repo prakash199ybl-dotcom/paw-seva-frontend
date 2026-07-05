@@ -509,6 +509,90 @@
               placeholder="you@email.com (optional)"
             />
           </div>
+
+          <!-- Email field ke baad ye add karo -->
+          <div class="form-group">
+            <label>Email (Optional)</label>
+            <input
+              type="email"
+              id="su_email"
+              placeholder="you@email.com (optional)"
+            />
+          </div>
+
+          <!-- CHANGE v3: City field with GPS button added -->
+          <div class="form-group">
+            <label>City / Location</label>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <input
+                type="text"
+                id="su_city"
+                placeholder="e.g. Indore, Bhopal, Mumbai"
+                style="
+                  flex: 1;
+                  padding: 11px 14px;
+                  border: 1.5px solid #e0e0e0;
+                  border-radius: 9px;
+                  font-size: 14px;
+                  font-family: &quot;DM Sans&quot;, sans-serif;
+                  outline: none;
+                  transition: border-color 0.2s;
+                  background: #fafafa;
+                "
+                onfocus="this.style.borderColor = '#4f8c74'"
+                onblur="this.style.borderColor = '#e0e0e0'"
+              />
+              <button
+                type="button"
+                onclick="autoFillCity('su_city')"
+                title="Auto-detect my city"
+                style="
+                  padding: 11px 14px;
+                  background: #1e4d3f;
+                  color: white;
+                  border: none;
+                  border-radius: 9px;
+                  cursor: pointer;
+                  font-size: 18px;
+                  flex-shrink: 0;
+                  transition: background 0.2s;
+                "
+                onmouseover="this.style.background = '#2f6b57'"
+                onmouseout="this.style.background = '#1e4d3f'"
+              >
+                📍
+              </button>
+            </div>
+            <p
+              style="font-size: 11px; color: #7d8590; margin-top: 5px"
+              id="su_gps_status"
+            >
+              Click 📍 to auto-detect your city using GPS
+            </p>
+          </div>
+
+          <!-- Role field -->
+          <div class="form-group">
+            <label>I am a</label>
+            <div class="role-grid">
+              <label class="role-opt"
+                ><input type="radio" name="su_role" value="Donor" /> 💰
+                Donor</label
+              >
+              <label class="role-opt"
+                ><input type="radio" name="su_role" value="Volunteer" /> 🦸
+                Volunteer</label
+              >
+              <label class="role-opt"
+                ><input type="radio" name="su_role" value="Feeder" /> 🍲
+                Feeder</label
+              >
+              <label class="role-opt"
+                ><input type="radio" name="su_role" value="NGO" /> 🏥 NGO</label
+              >
+            </div>
+          </div>
+
           <div class="form-group">
             <label>I am a</label>
             <div class="role-grid">

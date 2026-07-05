@@ -381,28 +381,55 @@ const sampleActivities = [
 let userActivities = JSON.parse(localStorage.getItem('ps_activities') || '[]');
 let displayedCount = 0;
 
+// ── createActivityCard — image properly handle karo ─────────────────────────
+// CHANGE v3: broken image handle, base64 + URL dono support
 function createActivityCard(activity) {
-  const typeLabel = activity.type.charAt(0).toUpperCase() + activity.type.slice(1);
-  const isLiked = (JSON.parse(localStorage.getItem('ps_liked') || '[]')).includes(activity.id);
+  const typeLabel = activity.type
+    ? activity.type.charAt(0).toUpperCase() + activity.type.slice(1)
+    : 'Activity';
+  const isLiked = (JSON.parse(localStorage.getItem('ps_liked') || '[]'))
+    .includes(String(activity.id));
+
+  // Image check — base64 ya valid URL hona chahiye
+  const hasImage = activity.image &&
+    activity.image.length > 10 &&
+    activity.image !== window.location.href &&
+    activity.image !== 'undefined' &&
+    activity.image !== 'null';
+
   return `
     <div class="activity-card" id="card-${activity.id}">
-      ${activity.image
-        ? `<img class="activity-card-img" src="${activity.image}" alt="Activity" loading="lazy" />`
-        : `<div class="activity-card-img-placeholder">${ACTIVITY_ICONS[activity.type] || '🐾'}</div>`
+      ${hasImage
+        ? `<img class="activity-card-img"
+              src="${activity.image}"
+              alt="Activity"
+              loading="lazy"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+           />
+           <div class="activity-card-img-placeholder" style="display:none">
+             ${ACTIVITY_ICONS[activity.type] || '🐾'}
+           </div>`
+        : `<div class="activity-card-img-placeholder">
+             ${ACTIVITY_ICONS[activity.type] || '🐾'}
+           </div>`
       }
       <div class="activity-card-body">
-        <span class="activity-tag ${ACTIVITY_TAG_CLASS[activity.type]}">${ACTIVITY_ICONS[activity.type]} ${typeLabel}</span>
-        <p class="activity-card-caption">${activity.caption}</p>
+        <span class="activity-tag ${ACTIVITY_TAG_CLASS[activity.type] || 'tag-feeding'}">
+          ${ACTIVITY_ICONS[activity.type] || '🐾'} ${typeLabel}
+        </span>
+        <p class="activity-card-caption">${activity.caption || ''}</p>
         <div class="activity-card-meta">
-          <span>👤 ${activity.name}</span>
-          <span>📍 ${activity.location}</span>
-          <span>⏰ ${activity.time}</span>
+          <span>👤 ${activity.name || 'Anonymous'}</span>
+          <span>📍 ${activity.location || '—'}</span>
+          <span>⏰ ${activity.time || 'Just now'}</span>
         </div>
         <div class="activity-card-likes">
-          <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${activity.id}, this)">
-            ❤️ ${activity.likes} Likes
+          <button class="like-btn ${isLiked ? 'liked' : ''}"
+            onclick="toggleLike('${activity.id}', this)">
+            ❤️ ${activity.likes || 0} Likes
           </button>
-          <button class="like-btn" onclick="shareActivity('${activity.name}', '${activity.caption}')">
+          <button class="like-btn"
+            onclick="shareActivity('${activity.name}', \`${activity.caption}\`)">
             🔗 Share
           </button>
         </div>
@@ -410,48 +437,6 @@ function createActivityCard(activity) {
     </div>
   `;
 }
-
-// function renderActivityWall() {
-//   const wall = document.getElementById('activityWall');
-//   if (!wall) return;
-//   const all = [...userActivities, ...sampleActivities];
-//   const toShow = all.slice(0, displayedCount + 6);
-//   wall.innerHTML = toShow.map(createActivityCard).join('');
-//   displayedCount = toShow.length;
-// }
-
-// function loadMorePosts() {
-//   displayedCount += 3;
-//   renderActivityWall();
-// }
-
-// function toggleLike(id, btn) {
-//   const liked = JSON.parse(localStorage.getItem('ps_liked') || '[]');
-//   const all = [...userActivities, ...sampleActivities];
-//   const activity = all.find(a => a.id === id);
-//   if (!activity) return;
-//   if (liked.includes(id)) {
-//     liked.splice(liked.indexOf(id), 1);
-//     activity.likes--;
-//     btn.classList.remove('liked');
-//   } else {
-//     liked.push(id);
-//     activity.likes++;
-//     btn.classList.add('liked');
-//   }
-//   btn.textContent = `❤️ ${activity.likes} Likes`;
-//   localStorage.setItem('ps_liked', JSON.stringify(liked));
-// }
-
-// function shareActivity(name, caption) {
-//   if (navigator.share) {
-//     navigator.share({ title: 'Paw Seva Activity', text: `${name}: ${caption}`, url: window.location.href });
-//   } else {
-//     navigator.clipboard?.writeText(`${name}: ${caption} — Paw Seva`);
-//     showToast('Activity link copied to clipboard! 🔗');
-//   }
-// }
-
 
 // ── renderActivityWall — backend se load karo, fallback sample data ────────────
 async function renderActivityWall() {
@@ -596,36 +581,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// function submitActivity() {
-//   const caption  = document.getElementById('activityCaption').value.trim();
-//   const location = document.getElementById('activityLocation').value.trim();
-//   const type     = document.getElementById('activityType').value;
-//   const nameVal  = document.getElementById('uploaderName').value.trim();
-//   const preview  = document.getElementById('photoPreview').src;
-
-//   if (!caption)  { showError('upload_error', 'Please add a caption for your story.'); return; }
-//   if (!location) { showError('upload_error', 'Please add your city/location.'); return; }
-//   if (!nameVal)  { showError('upload_error', 'Please add your name.'); return; }
-
-//   const u = getCurrentUser();
-//   const newActivity = {
-//     id: Date.now(),
-//     type,
-//     name: nameVal || (u ? u.name : 'Anonymous'),
-//     location,
-//     caption,
-//     image: preview && preview !== window.location.href ? preview : null,
-//     time: 'Just now',
-//     likes: 0,
-//   };
-//   userActivities.unshift(newActivity);
-//   localStorage.setItem('ps_activities', JSON.stringify(userActivities));
-//   displayedCount = 0;
-//   renderActivityWall();
-//   closeUploadModal();
-//   showToast('Your story has been shared with the community! 🐾');
-//   document.getElementById('community').scrollIntoView({ behavior: 'smooth' });
-// }
 
 // Submit activity function to work and add story for community//
 async function submitActivity() {
@@ -736,5 +691,101 @@ function compressImage(base64, quality = 0.6) {
       resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.src = base64;
+  });
+}
+
+// ── GPS Location Helper ───────────────────────────────────────────────────────
+// CHANGE v3: GPS se city + address auto-detect karo — no API key needed
+function getLocationFromGPS(callback) {
+  if (!navigator.geolocation) {
+    showToast('GPS not supported on this device.');
+    callback(null);
+    return;
+  }
+  showToast('📍 Detecting your location...');
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const data  = await response.json();
+        const addr  = data.address || {};
+        const city  = addr.city || addr.town || addr.village || addr.county || addr.state_district || 'Unknown';
+        const state = addr.state   || '';
+        const pincode = addr.postcode || '';
+        const street  = addr.road || addr.neighbourhood || '';
+        const area    = addr.suburb || addr.locality || '';
+        const fullAddress = [street, area, city, state, pincode].filter(Boolean).join(', ');
+        callback({ city, state, pincode, fullAddress, lat: latitude, lon: longitude });
+        showToast(`📍 Location: ${city}, ${state}`);
+      } catch {
+        showToast('Could not get address. Enter manually.');
+        callback(null);
+      }
+    },
+    (error) => {
+      const msgs = {
+        1: 'Location permission denied. Please allow.',
+        2: 'Location unavailable. Enter manually.',
+        3: 'Request timed out.',
+      };
+      showToast(msgs[error.code] || 'GPS error.');
+      callback(null);
+    },
+    { timeout: 10000, enableHighAccuracy: true }
+  );
+}
+
+// ── Auto fill city field from GPS ─────────────────────────────────────────────
+// CHANGE v3: GPS se city field auto-fill + status message update
+function autoFillCity(fieldId) {
+  const field = document.getElementById(fieldId);
+  if (!field) return;
+
+  // Button dhundo
+  const btn = field.parentElement.querySelector('button');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+
+  // Status element ID decide karo
+  const statusId = fieldId === 'su_city' ? 'su_gps_status' : 'gpsStatus';
+  const statusEl = document.getElementById(statusId);
+  if (statusEl) {
+    statusEl.textContent = '🔍 Detecting location...';
+    statusEl.style.color = '#4f8c74';
+  }
+
+  getLocationFromGPS((location) => {
+    // Button restore
+    if (btn) { btn.textContent = '📍'; btn.disabled = false; }
+
+    if (!location) {
+      if (statusEl) {
+        statusEl.textContent = '❌ Could not detect. Enter manually.';
+        statusEl.style.color = '#e05454';
+      }
+      return;
+    }
+
+    // Field fill karo
+    field.value = `${location.city}, ${location.state}`;
+    field.style.borderColor = '#4f8c74';
+
+    // Status update
+    if (statusEl) {
+      statusEl.textContent = `✅ ${location.fullAddress}`;
+      statusEl.style.color = '#2f6b57';
+    }
+
+    // localStorage mein city save karo
+    const u = getCurrentUser();
+    if (u) {
+      u.city        = `${location.city}, ${location.state}`;
+      u.fullAddress = location.fullAddress;
+      u.pincode     = location.pincode;
+      setCurrentUser(u);
+    }
   });
 }
