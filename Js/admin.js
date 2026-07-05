@@ -239,45 +239,96 @@ async function loadDonationsFull() {
 }
 
 // ── Users/Volunteers section ─────────────────────────────────────────────────
-async function loadUsersFull() {
+// ── Users/Volunteers section ─────────────────────────────────────────────────
+// CHANGE: search box added, disable button added, city column added
+async function loadUsersFull(search = '', roleFilter = 'all') {
   const tbody = document.getElementById('volunteersBody');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#7d8590">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8590">Loading...</td></tr>';
+
   try {
-    const { ok, data } = await apiFetch('/users?limit=50');
+    // Search params build karo
+    const params = new URLSearchParams({ limit: 50 });
+    if (search)     params.set('search', search);
+    if (roleFilter && roleFilter !== 'all') params.set('role', roleFilter);
+
+    const { ok, data } = await apiFetch(`/users?${params}`);
     if (!ok) throw new Error('API offline');
-    tbody.innerHTML = data.users.map(u => `<tr>
-      <td><strong>${u.name}</strong></td>
-      <td><span class="status-pill active">${u.role}</span></td>
-      <td style="color:#7d8590;font-size:12px">${u.phone || '—'}</td>
-      <td style="color:#7d8590;font-size:12px">${u.city || '—'}</td>
-      <td style="color:#7d8590;font-size:12px">${new Date(u.createdAt).toLocaleDateString('en-IN')}</td>
-      <td><span class="status-pill ${u.isActive ? 'active' : 'pending'}">${u.isActive ? 'active' : 'inactive'}</span></td>
-      <td style="display:flex;gap:6px">
-        <button class="btn-sm view" onclick="showToast('Viewing ${u.name}...')">View</button>
-        ${u.role !== 'admin' ? `<button class="btn-sm dismiss" onclick="deleteUser(this,'${u._id}','${u.name}')">✕</button>` : ''}
-      </td>
-    </tr>`).join('') || emptyRow(7, 'No users found.');
+
+    tbody.innerHTML = data.users.map(u => `
+      <tr id="urow-${u._id}" style="${u.isActive === false ? 'opacity:0.5' : ''}">
+        <td><strong>${u.name}</strong></td>
+        <td><span class="status-pill active">${u.role}</span></td>
+        <td style="color:#7d8590;font-size:12px">${u.phone || '—'}</td>
+        <td style="color:#7d8590;font-size:12px">${u.city || '—'}</td>
+        <td style="color:#7d8590;font-size:12px">${u.email || '—'}</td>
+        <td style="color:#7d8590;font-size:12px">${new Date(u.createdAt).toLocaleDateString('en-IN')}</td>
+        <td><span class="status-pill ${u.isActive !== false ? 'active' : 'pending'}">${u.isActive !== false ? 'active' : 'disabled'}</span></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn-sm view" onclick="showToast('Viewing ${u.name}')">View</button>
+          ${u.role !== 'admin' ? `
+            <button class="btn-sm ${u.isActive !== false ? 'dismiss' : 'approve'}"
+              id="disbtn-${u._id}"
+              onclick="toggleUserStatus('${u._id}', '${u.name}', this)">
+              ${u.isActive !== false ? 'Disable' : 'Enable'}
+            </button>` : ''}
+        </td>
+      </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8590">No users found.</td></tr>';
+
   } catch {
+    // Demo fallback
     const demoUsers = [
-      ['Rahul Sharma','Volunteer','+91 98765 01234','Indore','28 Jun 2026'],
-      ['Priya Singh','Donor','+91 87654 12345','Bhopal','20 Jun 2026'],
-      ['Amit Kumar','Feeder','+91 76543 23456','Indore','15 Jun 2026'],
-      ['Sneha Patel','NGO','+91 65432 34567','Pune','10 Jun 2026'],
-      ['Vikram Rao','Volunteer','+91 54321 45678','Delhi','05 Jun 2026'],
+      { _id:'d1', name:'Shilpa',  role:'Donor',     phone:'7400905912', city:'Indore',  email:'shilpa@ex.com',  createdAt:'2026-07-04', isActive:true  },
+      { _id:'d2', name:'Avinash', role:'Feeder',    phone:'9691155235', city:'Bhopal',  email:'avinash@ex.com', createdAt:'2026-06-30', isActive:true  },
+      { _id:'d3', name:'Shivani', role:'Donor',     phone:'6260118887', city:'Indore',  email:'shivani@ex.com', createdAt:'2026-06-30', isActive:true  },
+      { _id:'d4', name:'Prakash', role:'admin',     phone:'—',          city:'Bhopal',  email:'admin@p.com',    createdAt:'2026-04-25', isActive:true  },
     ];
-    tbody.innerHTML = demoUsers.map(([name,role,phone,city,joined]) => `<tr>
-      <td><strong>${name}</strong></td>
-      <td><span class="status-pill active">${role}</span></td>
-      <td style="color:#7d8590;font-size:12px">${phone}</td>
-      <td style="color:#7d8590;font-size:12px">${city}</td>
-      <td style="color:#7d8590;font-size:12px">${joined}</td>
-      <td><span class="status-pill active">active</span></td>
-      <td style="display:flex;gap:6px">
-        <button class="btn-sm view" onclick="showToast('Viewing ${name}...')">View</button>
-        <button class="btn-sm dismiss" onclick="this.closest('tr').remove();showToast('User removed.')">✕</button>
-      </td>
-    </tr>`).join('');
+    tbody.innerHTML = demoUsers.map(u => `
+      <tr id="urow-${u._id}">
+        <td><strong>${u.name}</strong></td>
+        <td><span class="status-pill active">${u.role}</span></td>
+        <td style="color:#7d8590;font-size:12px">${u.phone}</td>
+        <td style="color:#7d8590;font-size:12px">${u.city}</td>
+        <td style="color:#7d8590;font-size:12px">${u.email}</td>
+        <td style="color:#7d8590;font-size:12px">${u.createdAt}</td>
+        <td><span class="status-pill active">active</span></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn-sm view" onclick="showToast('Viewing ${u.name}')">View</button>
+          ${u.role !== 'admin' ? `<button class="btn-sm dismiss" onclick="showToast('Demo mode')">Disable</button>` : ''}
+        </td>
+      </tr>`).join('');
+  }
+}
+
+// ── Toggle user disable/enable ─────────────────────────────────────────────
+// CHANGE: delete ki jagah disable karo
+async function toggleUserStatus(id, name, btn) {
+  const isCurrentlyActive = btn.textContent.trim() === 'Disable';
+  const confirmMsg = isCurrentlyActive
+    ? `Disable "${name}"? They won't be able to login.`
+    : `Enable "${name}" again?`;
+  if (!confirm(confirmMsg)) return;
+
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const { ok, data } = await apiFetch(`/users/${id}/toggle`, { method: 'PATCH' });
+    if (ok) {
+      const row = document.getElementById(`urow-${id}`);
+      if (row) row.style.opacity = data.isActive ? '1' : '0.5';
+      btn.textContent = data.isActive ? 'Disable' : 'Enable';
+      btn.className   = `btn-sm ${data.isActive ? 'dismiss' : 'approve'}`;
+      showToast(data.message);
+    } else {
+      btn.textContent = isCurrentlyActive ? 'Disable' : 'Enable';
+      showToast(data.message || 'Failed.');
+    }
+  } catch {
+    btn.textContent = isCurrentlyActive ? 'Disable' : 'Enable';
+    showToast('Demo mode — user toggled locally.');
+    const row = document.getElementById(`urow-${id}`);
+    if (row) row.style.opacity = isCurrentlyActive ? '0.5' : '1';
+  } finally {
+    btn.disabled = false;
   }
 }
 

@@ -4,12 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Paw Seva — Admin Panel</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>"
+    />
     <link rel="stylesheet" href="../CSS/admin.css" />
   </head>
   <body>
-
     <!-- ===== LOGIN SCREEN ===== -->
     <div class="login-screen" id="loginScreen">
       <div class="login-box">
@@ -20,23 +25,46 @@
         </div>
         <div class="field">
           <label>Admin Email</label>
-          <input type="email" id="a_email" placeholder="admin@pawseva.com" value="admin@pawseva.com" />
+          <input
+            type="email"
+            id="a_email"
+            placeholder="admin@pawseva.com"
+            value="admin@pawseva.com"
+          />
         </div>
         <div class="field">
           <label>Password</label>
-          <input type="password" id="a_pass" placeholder="Enter admin password" value="admin123" />
+          <input
+            type="password"
+            id="a_pass"
+            placeholder="Enter admin password"
+            value="admin123"
+          />
         </div>
         <div id="a_error" class="login-error"></div>
-        <button class="btn-admin-login" id="a_loginBtn" onclick="doAdminLogin()">Access Admin Panel →</button>
-        <p style="text-align:center;margin-top:12px">
-          <a href="index.html" style="color:#7d8590;font-size:12px;text-decoration:none">← Back to Paw Seva</a>
+        <button
+          class="btn-admin-login"
+          id="a_loginBtn"
+          onclick="doAdminLogin()"
+        >
+          Access Admin Panel →
+        </button>
+        <p style="text-align: center; margin-top: 12px">
+          <a
+            href="index.html"
+            style="color: #7d8590; font-size: 12px; text-decoration: none"
+            >← Back to Paw Seva</a
+          >
         </p>
       </div>
     </div>
 
     <!-- ===== ADMIN LAYOUT ===== -->
-    <div class="admin-layout" id="adminLayout" style="display:none;width:100%;min-height:100vh">
-
+    <div
+      class="admin-layout"
+      id="adminLayout"
+      style="display: none; width: 100%; min-height: 100vh"
+    >
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-logo">
@@ -45,16 +73,36 @@
         </div>
 
         <nav class="sidebar-nav">
-          <a href="#" class="active" onclick="showSection('dashboard',this)"><span class="icon">📊</span> Dashboard</a>
-          <a href="#" onclick="showSection('rescues',this)"><span class="icon">🚨</span> Rescue Requests</a>
-          <a href="#" onclick="showSection('donations',this)"><span class="icon">💰</span> Donations</a>
-          <a href="#" onclick="showSection('volunteers',this)"><span class="icon">🦸</span> Volunteers</a>
-          <a href="#" onclick="showSection('feeding',this)"><span class="icon">📍</span> Feeding Spots</a>
-          <a href="#" onclick="showSection('ngo',this)"><span class="icon">🏥</span> NGO Partners</a>
-          <a href="#" onclick="showSection('campaigns',this)"><span class="icon">📢</span> Campaigns</a>
-          <a href="#" onclick="showSection('community',this)"><span class="icon">📸</span> Community Posts</a>
-          <a href="#" onclick="showSection('settings',this)"><span class="icon">⚙️</span> Settings</a>
-          <a href="dashboard.html" style="color:rgba(255,255,255,0.45)"><span class="icon">👤</span> User View</a>
+          <a href="#" class="active" onclick="showSection('dashboard', this)"
+            ><span class="icon">📊</span> Dashboard</a
+          >
+          <a href="#" onclick="showSection('rescues', this)"
+            ><span class="icon">🚨</span> Rescue Requests</a
+          >
+          <a href="#" onclick="showSection('donations', this)"
+            ><span class="icon">💰</span> Donations</a
+          >
+          <a href="#" onclick="showSection('volunteers', this)"
+            ><span class="icon">🦸</span> Volunteers</a
+          >
+          <a href="#" onclick="showSection('feeding', this)"
+            ><span class="icon">📍</span> Feeding Spots</a
+          >
+          <a href="#" onclick="showSection('ngo', this)"
+            ><span class="icon">🏥</span> NGO Partners</a
+          >
+          <a href="#" onclick="showSection('campaigns', this)"
+            ><span class="icon">📢</span> Campaigns</a
+          >
+          <a href="#" onclick="showSection('community', this)"
+            ><span class="icon">📸</span> Community Posts</a
+          >
+          <a href="#" onclick="showSection('settings', this)"
+            ><span class="icon">⚙️</span> Settings</a
+          >
+          <a href="dashboard.html" style="color: rgba(255, 255, 255, 0.45)"
+            ><span class="icon">👤</span> User View</a
+          >
         </nav>
 
         <div class="sidebar-footer">
@@ -65,7 +113,9 @@
               <div class="admin-role">Super Admin</div>
             </div>
           </div>
-          <button class="btn-logout-side" onclick="doAdminLogout()">→ Logout</button>
+          <button class="btn-logout-side" onclick="doAdminLogout()">
+            → Logout
+          </button>
         </div>
       </aside>
 
@@ -74,75 +124,194 @@
         <!-- TOPBAR -->
         <header class="topbar">
           <div>
-            <div class="topbar-title" id="topbarSectionTitle">Admin Dashboard</div>
-            <div class="topbar-sub">Paw Seva Control Center · <span id="lastUpdated">Last updated just now</span></div>
+            <div class="topbar-title" id="topbarSectionTitle">
+              Admin Dashboard
+            </div>
+            <div class="topbar-sub">
+              Paw Seva Control Center ·
+              <span id="lastUpdated">Last updated just now</span>
+            </div>
           </div>
           <div class="topbar-right">
-            <button class="icon-btn" title="Notifications" onclick="showToast('3 new rescue alerts! 🚨')">
+            <button
+              class="icon-btn"
+              title="Notifications"
+              onclick="showToast('3 new rescue alerts! 🚨')"
+            >
               🔔<span class="notif-dot"></span>
             </button>
-            <button class="icon-btn" title="Refresh data" onclick="refreshAll()">🔄</button>
-            <button class="icon-btn" title="Settings" onclick="showSection('settings',null)">⚙️</button>
-            <div style="width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#1e4d3f,#2a7055);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;cursor:pointer" id="topbarAvatar">P</div>
+            <button
+              class="icon-btn"
+              title="Refresh data"
+              onclick="refreshAll()"
+            >
+              🔄
+            </button>
+            <button
+              class="icon-btn"
+              title="Settings"
+              onclick="showSection('settings', null)"
+            >
+              ⚙️
+            </button>
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 8px;
+                background: linear-gradient(135deg, #1e4d3f, #2a7055);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 700;
+                font-size: 14px;
+                cursor: pointer;
+              "
+              id="topbarAvatar"
+            >
+              P
+            </div>
           </div>
         </header>
 
         <!-- CONTENT -->
         <div class="content">
-
           <!-- ===== SECTION: DASHBOARD ===== -->
           <div id="section-dashboard">
             <div class="stats-grid">
-              <div class="stat-card"><div class="stat-icon green">🐾</div><div><div class="stat-val" id="stat_animals">...</div><div class="stat-label">Total Rescues</div></div></div>
-              <div class="stat-card"><div class="stat-icon orange">🚨</div><div><div class="stat-val" id="stat_rescues">...</div><div class="stat-label">Active Rescues</div></div></div>
-              <div class="stat-card"><div class="stat-icon blue">🦸</div><div><div class="stat-val" id="stat_volunteers">...</div><div class="stat-label">Volunteers</div></div></div>
-              <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-val" id="stat_donations">...</div><div class="stat-label">Total Donations</div></div></div>
+              <div class="stat-card">
+                <div class="stat-icon green">🐾</div>
+                <div>
+                  <div class="stat-val" id="stat_animals">...</div>
+                  <div class="stat-label">Total Rescues</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">🚨</div>
+                <div>
+                  <div class="stat-val" id="stat_rescues">...</div>
+                  <div class="stat-label">Active Rescues</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon blue">🦸</div>
+                <div>
+                  <div class="stat-val" id="stat_volunteers">...</div>
+                  <div class="stat-label">Volunteers</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">💰</div>
+                <div>
+                  <div class="stat-val" id="stat_donations">...</div>
+                  <div class="stat-label">Total Donations</div>
+                </div>
+              </div>
             </div>
 
             <div class="panel">
-              <div class="panel-header"><span class="panel-title">🚨 Recent Rescue Requests</span><span class="badge live">Live</span></div>
-              <table><thead><tr><th>ID</th><th>Description</th><th>Location</th><th>Reported</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="requestsBodyDash"></tbody></table>
+              <div class="panel-header">
+                <span class="panel-title">🚨 Recent Rescue Requests</span
+                ><span class="badge live">Live</span>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Location</th>
+                    <th>Reported</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="requestsBodyDash"></tbody>
+              </table>
             </div>
 
             <div class="two-col">
               <div class="panel">
-                <div class="panel-header"><span class="panel-title">⚡ Quick Actions</span></div>
+                <div class="panel-header">
+                  <span class="panel-title">⚡ Quick Actions</span>
+                </div>
                 <div class="quick-actions">
-                  <div class="q-action" onclick="quickAction('campaign')"><span class="icon">📢</span><span class="label">New Campaign</span></div>
-                  <div class="q-action" onclick="quickAction('alert')"><span class="icon">📣</span><span class="label">Send Alert</span></div>
-                  <div class="q-action" onclick="quickAction('report')"><span class="icon">📄</span><span class="label">Export Report</span></div>
-                  <div class="q-action" onclick="quickAction('dispatch')"><span class="icon">🚑</span><span class="label">Dispatch Team</span></div>
-                  <div class="q-action" onclick="showSection('settings',null)"><span class="icon">⚙️</span><span class="label">Settings</span></div>
-                  <div class="q-action" onclick="showSection('community',null)"><span class="icon">📸</span><span class="label">Community Posts</span></div>
+                  <div class="q-action" onclick="quickAction('campaign')">
+                    <span class="icon">📢</span
+                    ><span class="label">New Campaign</span>
+                  </div>
+                  <div class="q-action" onclick="quickAction('alert')">
+                    <span class="icon">📣</span
+                    ><span class="label">Send Alert</span>
+                  </div>
+                  <div class="q-action" onclick="quickAction('report')">
+                    <span class="icon">📄</span
+                    ><span class="label">Export Report</span>
+                  </div>
+                  <div class="q-action" onclick="quickAction('dispatch')">
+                    <span class="icon">🚑</span
+                    ><span class="label">Dispatch Team</span>
+                  </div>
+                  <div class="q-action" onclick="showSection('settings', null)">
+                    <span class="icon">⚙️</span
+                    ><span class="label">Settings</span>
+                  </div>
+                  <div
+                    class="q-action"
+                    onclick="showSection('community', null)"
+                  >
+                    <span class="icon">📸</span
+                    ><span class="label">Community Posts</span>
+                  </div>
                 </div>
               </div>
               <div class="panel">
-                <div class="panel-header"><span class="panel-title">📈 Weekly Rescues</span></div>
+                <div class="panel-header">
+                  <span class="panel-title">📈 Weekly Rescues</span>
+                </div>
                 <div class="mini-chart">
                   <div class="chart-bars">
-                    <div class="bar" style="height:0"></div><div class="bar" style="height:0"></div>
-                    <div class="bar" style="height:0"></div><div class="bar" style="height:0"></div>
-                    <div class="bar" style="height:0"></div><div class="bar" style="height:0"></div>
-                    <div class="bar" style="height:0"></div>
+                    <div class="bar" style="height: 0"></div>
+                    <div class="bar" style="height: 0"></div>
+                    <div class="bar" style="height: 0"></div>
+                    <div class="bar" style="height: 0"></div>
+                    <div class="bar" style="height: 0"></div>
+                    <div class="bar" style="height: 0"></div>
+                    <div class="bar" style="height: 0"></div>
                   </div>
                   <div class="bar-labels">
-                    <div class="bar-label">Mon</div><div class="bar-label">Tue</div><div class="bar-label">Wed</div>
-                    <div class="bar-label">Thu</div><div class="bar-label">Fri</div><div class="bar-label">Sat</div><div class="bar-label">Sun</div>
+                    <div class="bar-label">Mon</div>
+                    <div class="bar-label">Tue</div>
+                    <div class="bar-label">Wed</div>
+                    <div class="bar-label">Thu</div>
+                    <div class="bar-label">Fri</div>
+                    <div class="bar-label">Sat</div>
+                    <div class="bar-label">Sun</div>
                   </div>
-                  <p id="feedingStatText" style="text-align:center;font-size:11px;color:#7d8590;margin-top:10px"></p>
+                  <p
+                    id="feedingStatText"
+                    style="
+                      text-align: center;
+                      font-size: 11px;
+                      color: #7d8590;
+                      margin-top: 10px;
+                    "
+                  ></p>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- ===== SECTION: RESCUES ===== -->
-          <div id="section-rescues" style="display:none">
+          <div id="section-rescues" style="display: none">
             <div class="panel">
               <div class="panel-header">
                 <span class="panel-title">🚨 All Rescue Requests</span>
-                <div style="display:flex;gap:10px;align-items:center">
-                  <select class="filter-select" onchange="filterRescues(this.value)">
+                <div style="display: flex; gap: 10px; align-items: center">
+                  <select
+                    class="filter-select"
+                    onchange="filterRescues(this.value)"
+                  >
                     <option value="all">All Status</option>
                     <option value="pending">Pending</option>
                     <option value="active">Active</option>
@@ -151,31 +320,127 @@
                   <span class="badge live">Live</span>
                 </div>
               </div>
-              <table><thead><tr><th>ID</th><th>Description</th><th>Location</th><th>Reported By</th><th>Reported</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="requestsBody"></tbody></table>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Location</th>
+                    <th>Reported By</th>
+                    <th>Reported</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="requestsBody"></tbody>
+              </table>
             </div>
           </div>
 
           <!-- ===== SECTION: DONATIONS ===== -->
-          <div id="section-donations" style="display:none">
-            <div class="stats-grid" style="margin-bottom:20px">
-              <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-val" id="d_total">₹0</div><div class="stat-label">Total Raised</div></div></div>
-              <div class="stat-card"><div class="stat-icon orange">📅</div><div><div class="stat-val" id="d_month">₹0</div><div class="stat-label">This Month</div></div></div>
-              <div class="stat-card"><div class="stat-icon blue">🧾</div><div><div class="stat-val" id="d_count">0</div><div class="stat-label">Transactions</div></div></div>
+          <div id="section-donations" style="display: none">
+            <div class="stats-grid" style="margin-bottom: 20px">
+              <div class="stat-card">
+                <div class="stat-icon green">💰</div>
+                <div>
+                  <div class="stat-val" id="d_total">₹0</div>
+                  <div class="stat-label">Total Raised</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">📅</div>
+                <div>
+                  <div class="stat-val" id="d_month">₹0</div>
+                  <div class="stat-label">This Month</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon blue">🧾</div>
+                <div>
+                  <div class="stat-val" id="d_count">0</div>
+                  <div class="stat-label">Transactions</div>
+                </div>
+              </div>
             </div>
             <div class="panel">
-              <div class="panel-header"><span class="panel-title">💰 All Donations</span><span class="badge live">Live</span></div>
-              <table><thead><tr><th>Donor</th><th>Amount</th><th>Campaign</th><th>Date</th><th>Status</th></tr></thead>
-              <tbody id="donationsBody"></tbody></table>
+              <div class="panel-header">
+                <span class="panel-title">💰 All Donations</span
+                ><span class="badge live">Live</span>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Donor</th>
+                    <th>Amount</th>
+                    <th>Campaign</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="donationsBody"></tbody>
+              </table>
             </div>
+          </div>
+          <!-- CHANGE: Search bar + role filter added for volunteers section -->
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              padding: 16px 22px 0;
+              flex-wrap: wrap;
+              align-items: center;
+            "
+          >
+            <input
+              type="text"
+              id="userSearchInput"
+              placeholder="🔍 Search by name, phone, or city..."
+              oninput="
+                loadUsersFull(
+                  this.value,
+                  document.getElementById('userRoleFilter').value,
+                )
+              "
+              style="
+                flex: 1;
+                min-width: 200px;
+                padding: 9px 14px;
+                background: var(--dark3);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                color: var(--text);
+                font-family: &quot;DM Sans&quot;, sans-serif;
+                font-size: 13px;
+                outline: none;
+              "
+            />
+            <select
+              id="userRoleFilter"
+              class="filter-select"
+              onchange="
+                loadUsersFull(
+                  document.getElementById('userSearchInput').value,
+                  this.value,
+                )
+              "
+            >
+              <option value="all">All Roles</option>
+              <option value="Volunteer">Volunteers</option>
+              <option value="Donor">Donors</option>
+              <option value="Feeder">Feeders</option>
+              <option value="NGO">NGO</option>
+            </select>
           </div>
 
           <!-- ===== SECTION: VOLUNTEERS ===== -->
-          <div id="section-volunteers" style="display:none">
+          <div id="section-volunteers" style="display: none">
             <div class="panel">
               <div class="panel-header">
                 <span class="panel-title">🦸 All Users & Volunteers</span>
-                <select class="filter-select" onchange="filterUsers(this.value)">
+                <select
+                  class="filter-select"
+                  onchange="filterUsers(this.value)"
+                >
                   <option value="all">All Roles</option>
                   <option value="Volunteer">Volunteers</option>
                   <option value="Donor">Donors</option>
@@ -183,62 +448,137 @@
                   <option value="NGO">NGO</option>
                 </select>
               </div>
-              <table><thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>City</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="volunteersBody"></tbody></table>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Phone</th>
+                    <th>City</th>
+                    <th>Email</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="volunteersBody"></tbody>
+              </table>
             </div>
           </div>
 
           <!-- ===== SECTION: FEEDING SPOTS ===== -->
-          <div id="section-feeding" style="display:none">
+          <div id="section-feeding" style="display: none">
             <div class="panel">
-              <div class="panel-header"><span class="panel-title">📍 Feeding Spots & Logs</span><span class="badge live">Live</span></div>
-              <table><thead><tr><th>Feeder</th><th>Location</th><th>Animals Fed</th><th>Food Given</th><th>Date</th></tr></thead>
-              <tbody id="feedingBody"></tbody></table>
+              <div class="panel-header">
+                <span class="panel-title">📍 Feeding Spots & Logs</span
+                ><span class="badge live">Live</span>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Feeder</th>
+                    <th>Location</th>
+                    <th>Animals Fed</th>
+                    <th>Food Given</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="feedingBody"></tbody>
+              </table>
             </div>
           </div>
 
           <!-- ===== SECTION: NGO PARTNERS ===== -->
-          <div id="section-ngo" style="display:none">
+          <div id="section-ngo" style="display: none">
             <div class="panel">
-              <div class="panel-header"><span class="panel-title">🏥 NGO Partners</span></div>
-              <div style="padding:30px;text-align:center;color:#7d8590">
-                <div style="font-size:42px;margin-bottom:12px">🏥</div>
-                <p style="font-size:15px;margin-bottom:8px">NGO Partner Management</p>
-                <p style="font-size:13px">48 NGOs currently partnered across 12 cities.</p>
-                <button onclick="quickAction('ngo')" style="margin-top:16px;padding:9px 20px;background:rgba(47,170,112,0.15);border:1px solid rgba(47,170,112,0.3);color:#2faa70;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600">+ Add NGO Partner</button>
+              <div class="panel-header">
+                <span class="panel-title">🏥 NGO Partners</span>
+              </div>
+              <div style="padding: 30px; text-align: center; color: #7d8590">
+                <div style="font-size: 42px; margin-bottom: 12px">🏥</div>
+                <p style="font-size: 15px; margin-bottom: 8px">
+                  NGO Partner Management
+                </p>
+                <p style="font-size: 13px">
+                  48 NGOs currently partnered across 12 cities.
+                </p>
+                <button
+                  onclick="quickAction('ngo')"
+                  style="
+                    margin-top: 16px;
+                    padding: 9px 20px;
+                    background: rgba(47, 170, 112, 0.15);
+                    border: 1px solid rgba(47, 170, 112, 0.3);
+                    color: #2faa70;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-family: &quot;DM Sans&quot;, sans-serif;
+                    font-weight: 600;
+                  "
+                >
+                  + Add NGO Partner
+                </button>
               </div>
             </div>
           </div>
 
           <!-- ===== SECTION: CAMPAIGNS ===== -->
-          <div id="section-campaigns" style="display:none">
+          <div id="section-campaigns" style="display: none">
             <div class="panel">
-              <div class="panel-header"><span class="panel-title">📢 Active Campaigns</span>
-                <button onclick="quickAction('campaign')" style="padding:7px 16px;background:rgba(47,170,112,0.15);border:1px solid rgba(47,170,112,0.3);color:#2faa70;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px">+ New Campaign</button>
+              <div class="panel-header">
+                <span class="panel-title">📢 Active Campaigns</span>
+                <button
+                  onclick="quickAction('campaign')"
+                  style="
+                    padding: 7px 16px;
+                    background: rgba(47, 170, 112, 0.15);
+                    border: 1px solid rgba(47, 170, 112, 0.3);
+                    color: #2faa70;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-family: &quot;DM Sans&quot;, sans-serif;
+                    font-weight: 600;
+                    font-size: 13px;
+                  "
+                >
+                  + New Campaign
+                </button>
               </div>
-              <div id="campaignsList" style="padding:16px"></div>
+              <div id="campaignsList" style="padding: 16px"></div>
             </div>
           </div>
 
           <!-- ===== SECTION: COMMUNITY POSTS ===== -->
-          <div id="section-community" style="display:none">
+          <div id="section-community" style="display: none">
             <div class="panel">
-              <div class="panel-header"><span class="panel-title">📸 Community Activity Posts</span><span class="badge pending">Moderation</span></div>
-              <div id="communityPostsAdmin" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
+              <div class="panel-header">
+                <span class="panel-title">📸 Community Activity Posts</span
+                ><span class="badge pending">Moderation</span>
+              </div>
+              <div
+                id="communityPostsAdmin"
+                style="
+                  padding: 16px;
+                  display: grid;
+                  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                  gap: 14px;
+                "
+              ></div>
             </div>
           </div>
 
           <!-- ===== SECTION: SETTINGS ===== -->
-          <div id="section-settings" style="display:none">
+          <div id="section-settings" style="display: none">
             <div class="settings-grid">
-
               <!-- General Settings -->
               <div class="settings-card">
                 <div class="settings-card-header">
                   <span class="settings-icon">🌐</span>
                   <div>
                     <div class="settings-title">General Settings</div>
-                    <div class="settings-sub">Site name, contact, and location</div>
+                    <div class="settings-sub">
+                      Site name, contact, and location
+                    </div>
                   </div>
                 </div>
                 <div class="settings-body">
@@ -248,7 +588,11 @@
                   </div>
                   <div class="s-field">
                     <label>Contact Email</label>
-                    <input type="email" id="s_email" value="pawseva@email.com" />
+                    <input
+                      type="email"
+                      id="s_email"
+                      value="pawseva@email.com"
+                    />
                   </div>
                   <div class="s-field">
                     <label>Contact Phone</label>
@@ -258,7 +602,12 @@
                     <label>Headquarters City</label>
                     <input type="text" id="s_city" value="Bhopal, MP" />
                   </div>
-                  <button class="s-btn s-btn-green" onclick="saveSettings('general')">Save General Settings</button>
+                  <button
+                    class="s-btn s-btn-green"
+                    onclick="saveSettings('general')"
+                  >
+                    Save General Settings
+                  </button>
                 </div>
               </div>
 
@@ -268,7 +617,9 @@
                   <span class="settings-icon">👤</span>
                   <div>
                     <div class="settings-title">Admin Account</div>
-                    <div class="settings-sub">Update admin name and password</div>
+                    <div class="settings-sub">
+                      Update admin name and password
+                    </div>
                   </div>
                 </div>
                 <div class="settings-body">
@@ -278,17 +629,34 @@
                   </div>
                   <div class="s-field">
                     <label>Current Password</label>
-                    <input type="password" id="s_currPass" placeholder="Enter current password" />
+                    <input
+                      type="password"
+                      id="s_currPass"
+                      placeholder="Enter current password"
+                    />
                   </div>
                   <div class="s-field">
                     <label>New Password</label>
-                    <input type="password" id="s_newPass" placeholder="Enter new password" />
+                    <input
+                      type="password"
+                      id="s_newPass"
+                      placeholder="Enter new password"
+                    />
                   </div>
                   <div class="s-field">
                     <label>Confirm New Password</label>
-                    <input type="password" id="s_confirmPass" placeholder="Confirm new password" />
+                    <input
+                      type="password"
+                      id="s_confirmPass"
+                      placeholder="Confirm new password"
+                    />
                   </div>
-                  <button class="s-btn s-btn-green" onclick="saveSettings('account')">Update Account</button>
+                  <button
+                    class="s-btn s-btn-green"
+                    onclick="saveSettings('account')"
+                  >
+                    Update Account
+                  </button>
                 </div>
               </div>
 
@@ -303,26 +671,70 @@
                 </div>
                 <div class="settings-body">
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">Email Alerts for Rescues</div><div class="s-toggle-sub">Get email on new rescue request</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="n_rescueEmail" checked /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">Email Alerts for Rescues</div>
+                      <div class="s-toggle-sub">
+                        Get email on new rescue request
+                      </div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="n_rescueEmail" checked /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">SMS Notifications</div><div class="s-toggle-sub">SMS for critical rescues</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="n_sms" /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">SMS Notifications</div>
+                      <div class="s-toggle-sub">SMS for critical rescues</div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="n_sms" /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">WhatsApp Alerts</div><div class="s-toggle-sub">WhatsApp messages for updates</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="n_whatsapp" checked /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">WhatsApp Alerts</div>
+                      <div class="s-toggle-sub">
+                        WhatsApp messages for updates
+                      </div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="n_whatsapp" checked /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">Weekly Reports</div><div class="s-toggle-sub">Auto-send weekly summary</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="n_weekly" checked /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">Weekly Reports</div>
+                      <div class="s-toggle-sub">Auto-send weekly summary</div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="n_weekly" checked /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">New User Signup Alert</div><div class="s-toggle-sub">Notify when new user joins</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="n_signup" /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">New User Signup Alert</div>
+                      <div class="s-toggle-sub">Notify when new user joins</div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="n_signup" /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
-                  <button class="s-btn s-btn-green" onclick="saveSettings('notifications')">Save Notification Settings</button>
+                  <button
+                    class="s-btn s-btn-green"
+                    onclick="saveSettings('notifications')"
+                  >
+                    Save Notification Settings
+                  </button>
                 </div>
               </div>
 
@@ -332,7 +744,9 @@
                   <span class="settings-icon">🔐</span>
                   <div>
                     <div class="settings-title">Auth & OTP Settings</div>
-                    <div class="settings-sub">Login methods and OTP provider</div>
+                    <div class="settings-sub">
+                      Login methods and OTP provider
+                    </div>
                   </div>
                 </div>
                 <div class="settings-body">
@@ -346,21 +760,55 @@
                   </div>
                   <div class="s-field">
                     <label>API Key / SID</label>
-                    <input type="text" id="s_otpKey" placeholder="Enter provider API key" />
+                    <input
+                      type="text"
+                      id="s_otpKey"
+                      placeholder="Enter provider API key"
+                    />
                   </div>
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">Google Login</div><div class="s-toggle-sub">Allow login via Google OAuth</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="auth_google" checked /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">Google Login</div>
+                      <div class="s-toggle-sub">
+                        Allow login via Google OAuth
+                      </div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="auth_google" checked /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">WhatsApp OTP</div><div class="s-toggle-sub">OTP via WhatsApp Business API</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="auth_wa" /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">WhatsApp OTP</div>
+                      <div class="s-toggle-sub">
+                        OTP via WhatsApp Business API
+                      </div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="auth_wa" /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
                   <div class="s-toggle-row">
-                    <div><div class="s-toggle-label">Instagram Login</div><div class="s-toggle-sub">Allow Instagram OAuth</div></div>
-                    <label class="toggle-switch"><input type="checkbox" id="auth_insta" /><span class="toggle-slider"></span></label>
+                    <div>
+                      <div class="s-toggle-label">Instagram Login</div>
+                      <div class="s-toggle-sub">Allow Instagram OAuth</div>
+                    </div>
+                    <label class="toggle-switch"
+                      ><input type="checkbox" id="auth_insta" /><span
+                        class="toggle-slider"
+                      ></span
+                    ></label>
                   </div>
-                  <button class="s-btn s-btn-green" onclick="saveSettings('auth')">Save Auth Settings</button>
+                  <button
+                    class="s-btn s-btn-green"
+                    onclick="saveSettings('auth')"
+                  >
+                    Save Auth Settings
+                  </button>
                 </div>
               </div>
 
@@ -376,16 +824,42 @@
                 <div class="settings-body">
                   <div class="s-field">
                     <label>Primary Color</label>
-                    <div style="display:flex;gap:10px;align-items:center">
-                      <input type="color" id="s_primaryColor" value="#1e4d3f" style="width:48px;height:38px;border:none;cursor:pointer;border-radius:8px" />
-                      <span style="color:#7d8590;font-size:13px">Current: Deep Forest Green</span>
+                    <div style="display: flex; gap: 10px; align-items: center">
+                      <input
+                        type="color"
+                        id="s_primaryColor"
+                        value="#1e4d3f"
+                        style="
+                          width: 48px;
+                          height: 38px;
+                          border: none;
+                          cursor: pointer;
+                          border-radius: 8px;
+                        "
+                      />
+                      <span style="color: #7d8590; font-size: 13px"
+                        >Current: Deep Forest Green</span
+                      >
                     </div>
                   </div>
                   <div class="s-field">
                     <label>Accent Color</label>
-                    <div style="display:flex;gap:10px;align-items:center">
-                      <input type="color" id="s_accentColor" value="#f4a24d" style="width:48px;height:38px;border:none;cursor:pointer;border-radius:8px" />
-                      <span style="color:#7d8590;font-size:13px">Current: Warm Amber</span>
+                    <div style="display: flex; gap: 10px; align-items: center">
+                      <input
+                        type="color"
+                        id="s_accentColor"
+                        value="#f4a24d"
+                        style="
+                          width: 48px;
+                          height: 38px;
+                          border: none;
+                          cursor: pointer;
+                          border-radius: 8px;
+                        "
+                      />
+                      <span style="color: #7d8590; font-size: 13px"
+                        >Current: Warm Amber</span
+                      >
                     </div>
                   </div>
                   <div class="s-field">
@@ -396,7 +870,12 @@
                       <option value="50">50</option>
                     </select>
                   </div>
-                  <button class="s-btn s-btn-green" onclick="saveSettings('appearance')">Apply Appearance</button>
+                  <button
+                    class="s-btn s-btn-green"
+                    onclick="saveSettings('appearance')"
+                  >
+                    Apply Appearance
+                  </button>
                 </div>
               </div>
 
@@ -406,32 +885,99 @@
                   <span class="settings-icon">📊</span>
                   <div>
                     <div class="settings-title">Data & Export</div>
-                    <div class="settings-sub">Download and manage your data</div>
+                    <div class="settings-sub">
+                      Download and manage your data
+                    </div>
                   </div>
                 </div>
                 <div class="settings-body">
-                  <p style="font-size:13px;color:#7d8590;margin-bottom:16px">Export your data for records, reporting, or backup.</p>
-                  <div style="display:flex;flex-direction:column;gap:10px">
-                    <button class="s-btn s-btn-outline" onclick="exportData('rescues')">📄 Export Rescue Data (CSV)</button>
-                    <button class="s-btn s-btn-outline" onclick="exportData('donations')">📄 Export Donations (CSV)</button>
-                    <button class="s-btn s-btn-outline" onclick="exportData('users')">📄 Export Users (CSV)</button>
-                    <button class="s-btn s-btn-outline" onclick="exportData('feeding')">📄 Export Feeding Logs (CSV)</button>
+                  <p
+                    style="font-size: 13px; color: #7d8590; margin-bottom: 16px"
+                  >
+                    Export your data for records, reporting, or backup.
+                  </p>
+                  <div style="display: flex; flex-direction: column; gap: 10px">
+                    <button
+                      class="s-btn s-btn-outline"
+                      onclick="exportData('rescues')"
+                    >
+                      📄 Export Rescue Data (CSV)
+                    </button>
+                    <button
+                      class="s-btn s-btn-outline"
+                      onclick="exportData('donations')"
+                    >
+                      📄 Export Donations (CSV)
+                    </button>
+                    <button
+                      class="s-btn s-btn-outline"
+                      onclick="exportData('users')"
+                    >
+                      📄 Export Users (CSV)
+                    </button>
+                    <button
+                      class="s-btn s-btn-outline"
+                      onclick="exportData('feeding')"
+                    >
+                      📄 Export Feeding Logs (CSV)
+                    </button>
                   </div>
-                  <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)">
-                    <p style="font-size:12px;color:#e05454;margin-bottom:10px">⚠️ Danger Zone</p>
-                    <button class="s-btn s-btn-red" onclick="confirmDangerAction('purge')">🗑️ Purge Old Records (&gt;1 year)</button>
+                  <div
+                    style="
+                      margin-top: 20px;
+                      padding-top: 16px;
+                      border-top: 1px solid rgba(255, 255, 255, 0.07);
+                    "
+                  >
+                    <p
+                      style="
+                        font-size: 12px;
+                        color: #e05454;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      ⚠️ Danger Zone
+                    </p>
+                    <button
+                      class="s-btn s-btn-red"
+                      onclick="confirmDangerAction('purge')"
+                    >
+                      🗑️ Purge Old Records (&gt;1 year)
+                    </button>
                   </div>
                 </div>
               </div>
+            </div>
+            <!-- /settings-grid -->
+          </div>
+          <!-- /section-settings -->
+        </div>
+        <!-- /content -->
+      </div>
+      <!-- /main -->
+    </div>
+    <!-- /admin-layout -->
 
-            </div><!-- /settings-grid -->
-          </div><!-- /section-settings -->
-
-        </div><!-- /content -->
-      </div><!-- /main -->
-    </div><!-- /admin-layout -->
-
-    <div id="toast" style="position:fixed;bottom:28px;right:28px;background:#2faa70;color:white;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;opacity:0;transform:translateY(12px);transition:all 0.3s;pointer-events:none;font-family:'DM Sans',sans-serif"></div>
+    <div
+      id="toast"
+      style="
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: #2faa70;
+        color: white;
+        padding: 12px 22px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 9999;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: all 0.3s;
+        pointer-events: none;
+        font-family: &quot;DM Sans&quot;, sans-serif;
+      "
+    ></div>
 
     <script src="../Js/admin.js"></script>
   </body>
