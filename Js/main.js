@@ -190,7 +190,7 @@ async function handleLoginOTP() {
     document.getElementById('li_btn').textContent = 'Verify OTP ✓';
     showToast(`OTP sent to +91 ${phone} (Demo OTP: ${demoOTP})`);
     document.querySelector('#li_otp_group .otp-box').focus();
-  } else {
+  } else 
     const enteredOTP = getOTPValue('li');
     if (enteredOTP.length !== 6) { showError('li_error', 'Please enter the complete 6-digit OTP.'); return; }
     if (enteredOTP !== otpState.li.otp) { showError('li_error', 'Incorrect OTP. Please try again.'); return; }
