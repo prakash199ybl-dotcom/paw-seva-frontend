@@ -752,9 +752,19 @@
     <div id="toast"></div>
     <script src="../Js/main.js"></script>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const u = getCurrentUser();
-        if (u) document.getElementById("dashLink").style.display = "block";
+      // CHANGE: DOMContentLoaded ke baad main.js load hone ke baad check karo
+      window.addEventListener("load", () => {
+        try {
+          const u = localStorage.getItem("ps_current");
+          const user = u ? JSON.parse(u) : null;
+          const dashLink = document.getElementById("dashLink");
+          const adminLink = document.getElementById("adminNavLink");
+          if (user && dashLink) dashLink.style.display = "block";
+          if (user && user.role === "admin" && adminLink)
+            adminLink.style.display = "block";
+        } catch (e) {
+          console.log("Session check:", e.message);
+        }
       });
     </script>
   </body>
