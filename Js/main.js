@@ -1,9 +1,13 @@
 // ============================================================
-//   PAW SEVA — main.js  (Updated v3.0)
-//   OTP login, Social auth, Community wall, Animated counters
+//   PAW SEVA — main.js 
+//   1. Story submit → community wall turant update hoti hai
+//   2. Login ke baad "Join Paw Seva" hide, Logout show
+//   3. GPS location — city auto-detect
+//   4. timeAgo function added
+//   5. Duplicate email field removed
+//   6. Signup mein city save hoti hai
 // ============================================================
 
-// const API = 'http://localhost:5000/api';
 const API = 'https://paw-seva-backend.onrender.com/api';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
@@ -28,21 +32,27 @@ async function apiFetch(path, options = {}) {
 const modal = document.getElementById('authModal');
 
 function openModal(tab = 'signup') {
+  if (!modal) return;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
   tab === 'login' ? showLogin() : showSignup();
 }
 function closeModal() {
+  if (!modal) return;
   modal.classList.remove('open');
   document.body.style.overflow = '';
   clearErrors();
   clearFormFields();
-  // Reset OTP states
   resetOTPState('su');
   resetOTPState('li');
 }
-modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeModal(); closeUploadModal(); } });
+
+if (modal) {
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeModal(); closeUploadModal(); }
+});
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 function showSignup() {
@@ -60,7 +70,7 @@ function showLogin() {
   clearErrors();
 }
 
-// ── OTP State management ───────────────────────────────────────────────────────
+// ── OTP State ─────────────────────────────────────────────────────────────────
 let otpState = { su: { sent: false, otp: '', phone: '' }, li: { sent: false, otp: '', phone: '' } };
 
 function resetOTPState(prefix) {
@@ -69,14 +79,11 @@ function resetOTPState(prefix) {
   if (otpGroup) otpGroup.style.display = 'none';
   const btn = document.getElementById(`${prefix}_btn`);
   if (btn) btn.textContent = 'Get OTP 📲';
-  // Clear OTP boxes
-  const otpBoxes = document.querySelectorAll(`#${prefix}_otp_group .otp-box`);
-  otpBoxes.forEach(b => b.value = '');
+  document.querySelectorAll(`#${prefix}_otp_group .otp-box`).forEach(b => b.value = '');
 }
 
 function getOTPValue(prefix) {
-  const boxes = document.querySelectorAll(`#${prefix}_otp_group .otp-box`);
-  return Array.from(boxes).map(b => b.value).join('');
+  return Array.from(document.querySelectorAll(`#${prefix}_otp_group .otp-box`)).map(b => b.value).join('');
 }
 
 function setupOTPBoxes(prefix) {
@@ -96,11 +103,9 @@ function setupOTPBoxes(prefix) {
 // ── Signup OTP handler ─────────────────────────────────────────────────────────
 async function handleSignupOTP() {
   if (!otpState.su.sent) {
-    // Step 1: Send OTP
     const phone = document.getElementById('su_phone').value.trim();
     if (!phone || phone.length !== 10 || !/^\d+$/.test(phone)) {
-      showError('su_error', 'Please enter a valid 10-digit mobile number.');
-      return;
+      showError('su_error', 'Please enter a valid 10-digit mobile number.'); return;
     }
     const name = document.getElementById('su_name').value.trim();
     if (!name) { showError('su_error', 'Please enter your full name.'); return; }
@@ -108,7 +113,6 @@ async function handleSignupOTP() {
     if (!roleEl) { showError('su_error', 'Please select your role.'); return; }
 
     setBtnLoading('su_btn', true, 'Get OTP 📲');
-    // Simulate OTP (in production, call backend /api/auth/send-otp)
     const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
     otpState.su = { sent: true, otp: demoOTP, phone };
     document.getElementById('su_phone_display').textContent = phone;
@@ -116,25 +120,25 @@ async function handleSignupOTP() {
     setupOTPBoxes('su');
     setBtnLoading('su_btn', false, 'Verify OTP ✓');
     document.getElementById('su_btn').textContent = 'Verify OTP ✓';
-    showToast(`OTP sent to +91 ${phone} (Demo OTP: ${demoOTP})`);
+    showToast(`OTP sent to +91 ${phone} · Demo OTP: ${demoOTP}`);
     document.querySelector('#su_otp_group .otp-box').focus();
   } else {
-    // Step 2: Verify OTP & create account
     const enteredOTP = getOTPValue('su');
     if (enteredOTP.length !== 6) { showError('su_error', 'Please enter the complete 6-digit OTP.'); return; }
     if (enteredOTP !== otpState.su.otp) { showError('su_error', 'Incorrect OTP. Please try again.'); return; }
 
-    const name    = document.getElementById('su_name').value.trim();
-    const email   = document.getElementById('su_email').value.trim() || `user${otpState.su.phone}@pawseva.app`;
-    const phone   = otpState.su.phone;
-    const roleEl  = document.querySelector('input[name="su_role"]:checked');
+    const name     = document.getElementById('su_name').value.trim();
+    const email    = document.getElementById('su_email').value.trim() || `user${otpState.su.phone}@pawseva.app`;
+    const phone    = otpState.su.phone;
+    const roleEl   = document.querySelector('input[name="su_role"]:checked');
+    const city     = document.getElementById('su_city')?.value?.trim() || '';
     const password = `OTP_${Date.now()}`;
 
     setBtnLoading('su_btn', true, 'Verify OTP ✓');
     try {
       const { ok, data } = await apiFetch('/auth/signup', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password, role: roleEl.value, phone }),
+        body: JSON.stringify({ name, email, password, role: roleEl.value, phone, city }),
       });
       if (!ok) { showError('su_error', data.message || 'Signup failed. Try again.'); return; }
       setToken(data.token);
@@ -142,44 +146,26 @@ async function handleSignupOTP() {
       closeModal();
       updateNavForUser(data.user);
       showToast(`Welcome to Paw Seva, ${data.user.name.split(' ')[0]}! 🐾`);
-    // } catch {
-    //   // Demo mode when backend not available
-    //   const demoUser = { id: Date.now(), name, email, phone, role: roleEl.value };
-    //   setCurrentUser(demoUser);
-    //   closeModal();
-    //   updateNavForUser(demoUser);
-    //   showToast(`Welcome to Paw Seva, ${name.split(' ')[0]}! 🐾`);
-    // } 
-    
     } catch {
-  const demoUser = {
-    id:    Date.now(),
-    name:  name,
-    email: email,
-    phone: phone,
-    role:  roleEl.value
-  };
-  setCurrentUser(demoUser);
-  setToken('demo_token_' + Date.now());
-  closeModal();
-  updateNavForUser(demoUser);
-  showToast(`Welcome to Paw Seva, ${name.split(' ')[0]}! 🐾`);
-}
-    
-    finally {
+      // Demo mode
+      const demoUser = { id: Date.now(), name, email, phone, role: roleEl.value, city };
+      setCurrentUser(demoUser);
+      setToken('demo_token_' + Date.now());
+      closeModal();
+      updateNavForUser(demoUser);
+      showToast(`Welcome to Paw Seva, ${name.split(' ')[0]}! 🐾`);
+    } finally {
       setBtnLoading('su_btn', false, 'Verify OTP ✓');
     }
   }
 }
 
 // ── Login OTP handler ──────────────────────────────────────────────────────────
-// ── Login OTP handler ─────────────────────────────────────────────────────────
 async function handleLoginOTP() {
   if (!otpState.li.sent) {
     const phone = document.getElementById('li_phone').value.trim();
     if (!phone || phone.length !== 10 || !/^\d+$/.test(phone)) {
-      showError('li_error', 'Please enter a valid 10-digit mobile number.');
-      return;
+      showError('li_error', 'Please enter a valid 10-digit mobile number.'); return;
     }
     setBtnLoading('li_btn', true, 'Get OTP 📲');
     const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
@@ -189,7 +175,7 @@ async function handleLoginOTP() {
     setupOTPBoxes('li');
     setBtnLoading('li_btn', false, 'Verify OTP ✓');
     document.getElementById('li_btn').textContent = 'Verify OTP ✓';
-    showToast(`OTP sent to +91 ${phone} (Demo OTP: ${demoOTP})`);
+    showToast(`OTP sent to +91 ${phone} · Demo OTP: ${demoOTP}`);
     document.querySelector('#li_otp_group .otp-box').focus();
   } else {
     const enteredOTP = getOTPValue('li');
@@ -208,10 +194,9 @@ async function handleLoginOTP() {
         setCurrentUser(data.user);
         closeModal();
         updateNavForUser(data.user);
-        const msg = data.user.role === 'admin' ? 'Welcome back, Admin! 🛡️' : `Welcome back, ${data.user.name.split(' ')[0]}! 🐾`;
-        showToast(msg);
+        showToast(data.user.role === 'admin' ? 'Welcome back, Admin! 🛡️' : `Welcome back, ${data.user.name.split(' ')[0]}! 🐾`);
       } else {
-        throw new Error('Backend OTP login not configured');
+        throw new Error('Backend OTP not configured');
       }
     } catch {
       // Demo mode — existing user ka naam use karo
@@ -220,39 +205,38 @@ async function handleLoginOTP() {
         id:    Date.now(),
         name:  existingUser?.name || `User ${phone.slice(-4)}`,
         phone: phone,
-        role:  existingUser?.role || 'Donor'
+        role:  existingUser?.role || 'Donor',
+        city:  existingUser?.city || '',
       };
       setCurrentUser(demoUser);
       closeModal();
       updateNavForUser(demoUser);
-      showToast(`Welcome back! 🐾`);
+      showToast(`Welcome back, ${demoUser.name.split(' ')[0]}! 🐾`);
     } finally {
       setBtnLoading('li_btn', false, 'Verify OTP ✓');
     }
   }
 }
-// ── Social login handlers ──────────────────────────────────────────────────────
-function loginWithGoogle() {
-  showToast('Google OAuth: Configure in backend with passport-google-oauth20 📧');
-  // In production: window.location.href = `${API}/auth/google`;
-}
-function loginWithInstagram() {
-  showToast('Instagram OAuth: Configure in backend with passport-instagram 📸');
-  // In production: window.location.href = `${API}/auth/instagram`;
-}
-function loginWithWhatsApp() {
-  showToast('WhatsApp OTP: Configure WhatsApp Business API 💬');
-  // In production: open WhatsApp OTP flow
+
+function resendOTP(prefix) {
+  resetOTPState(prefix);
+  showToast('Please request a new OTP.');
 }
 
-// ── LOGOUT ────────────────────────────────────────────────────────────────────
+// ── Social login ───────────────────────────────────────────────────────────────
+function loginWithGoogle()    { showToast('Google OAuth: Configure in backend 📧'); }
+function loginWithInstagram() { showToast('Instagram OAuth: Configure in backend 📸'); }
+function loginWithWhatsApp()  { showToast('WhatsApp OTP: Configure Business API 💬'); }
+
+// ── Logout ────────────────────────────────────────────────────────────────────
 function doLogout() {
-  removeToken(); removeCurrentUser();
+  removeToken();
+  removeCurrentUser();
   updateNavForUser(null);
   showToast('Logged out successfully.');
 }
 
-// ── Update navbar UI ──────────────────────────────────────────────────────────
+// ── FIX 2: Navbar update — login hone pe Join Paw Seva HIDE, Logout SHOW ──────
 function updateNavForUser(user) {
   const authBtns      = document.getElementById('authBtns');
   const userNav       = document.getElementById('userNav');
@@ -262,16 +246,18 @@ function updateNavForUser(user) {
   const dashLink      = document.getElementById('dashLink');
 
   if (user) {
-    authBtns.classList.add('hidden');
-    userNav.classList.add('visible');
-    userNavName.textContent   = user.name ? user.name.split(' ')[0] : 'User';
-    userNavAvatar.textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
-    if (dashLink)     dashLink.style.display = 'block';
-    if (adminNavLink) adminNavLink.style.display = user.role === 'admin' ? 'block' : 'none';
+    // Logged in — Join Paw Seva HIDE karo, user info SHOW karo
+    if (authBtns)      authBtns.classList.add('hidden');
+    if (userNav)       userNav.classList.add('visible');
+    if (userNavName)   userNavName.textContent   = user.name ? user.name.split(' ')[0] : 'User';
+    if (userNavAvatar) userNavAvatar.textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+    if (dashLink)      dashLink.style.display    = 'block';
+    if (adminNavLink)  adminNavLink.style.display = user.role === 'admin' ? 'block' : 'none';
   } else {
-    authBtns.classList.remove('hidden');
-    userNav.classList.remove('visible');
-    if (dashLink)     dashLink.style.display = 'none';
+    // Logged out — Join Paw Seva SHOW karo
+    if (authBtns)     authBtns.classList.remove('hidden');
+    if (userNav)      userNav.classList.remove('visible');
+    if (dashLink)     dashLink.style.display     = 'none';
     if (adminNavLink) adminNavLink.style.display = 'none';
   }
 }
@@ -283,10 +269,13 @@ async function verifySession() {
   try {
     const { ok, data } = await apiFetch('/auth/me');
     if (ok && data.user) { setCurrentUser(data.user); updateNavForUser(data.user); }
-    else { removeToken(); removeCurrentUser(); updateNavForUser(null); }
+    else {
+      removeToken(); removeCurrentUser(); updateNavForUser(null);
+    }
   } catch {
     const cached = getCurrentUser();
     if (cached) updateNavForUser(cached);
+    else updateNavForUser(null);
   }
 }
 
@@ -308,7 +297,7 @@ function clearErrors() {
   });
 }
 function clearFormFields() {
-  ['su_name','su_phone','su_email','li_phone'].forEach(id => {
+  ['su_name','su_phone','su_email','su_city','li_phone'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -323,6 +312,19 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
+// ── timeAgo helper ─────────────────────────────────────────────────────────────
+function timeAgo(dateStr) {
+  if (!dateStr) return 'Just now';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1)  return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  if (hrs < 24)  return `${hrs} hr ago`;
+  return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
 // ── Quotes rotator ────────────────────────────────────────────────────────────
 const quotes = [
   { text: "The greatness of a nation can be judged by the way its animals are treated.", cite: "— Mahatma Gandhi" },
@@ -334,7 +336,7 @@ const quotes = [
 let currentQuote = 0;
 function rotateQuote(index) {
   currentQuote = (index !== undefined) ? index : (currentQuote + 1) % quotes.length;
-  const el = document.getElementById('quoteText');
+  const el     = document.getElementById('quoteText');
   const citeEl = document.getElementById('quoteCite');
   if (!el) return;
   el.style.opacity = '0';
@@ -351,12 +353,11 @@ function updateDots() {
 
 // ── Animated counters ─────────────────────────────────────────────────────────
 function animateCounters() {
-  const counters = document.querySelectorAll('.counter');
-  counters.forEach(counter => {
+  document.querySelectorAll('.counter').forEach(counter => {
     const target = parseInt(counter.getAttribute('data-target'));
     const suffix = counter.getAttribute('data-suffix') || '+';
     let count = 0;
-    const step = Math.ceil(target / 80);
+    const step  = Math.ceil(target / 80);
     const timer = setInterval(() => {
       count += step;
       if (count >= target) { count = target; clearInterval(timer); }
@@ -365,53 +366,43 @@ function animateCounters() {
   });
 }
 
-// ── Community Activity Wall ────────────────────────────────────────────────────
-const ACTIVITY_ICONS = { feeding:'🍲', rescue:'🚨', medical:'🏥', adoption:'🏠', shelter:'🏕️' };
+// ── Activity Wall ─────────────────────────────────────────────────────────────
+const ACTIVITY_ICONS     = { feeding:'🍲', rescue:'🚨', medical:'🏥', adoption:'🏠', shelter:'🏕️' };
 const ACTIVITY_TAG_CLASS = { feeding:'tag-feeding', rescue:'tag-rescue', medical:'tag-medical', adoption:'tag-adoption', shelter:'tag-shelter' };
 
 const sampleActivities = [
-  { id:1, type:'feeding', name:'Ravi Kumar', location:'Indore, MP', caption:'Fed 15 stray dogs at Palasia Square today. They were so hungry! 🐕', image:'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80', time:'2 hours ago', likes:24 },
-  { id:2, type:'rescue', name:'Priya NGO', location:'Bhopal, MP', caption:'Successfully rescued an injured puppy near Bharat Talkies and took it to the vet.', image:'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&q=80', time:'5 hours ago', likes:41 },
-  { id:3, type:'medical', name:'Dr. Sharma', location:'Mumbai', caption:'Free vaccination camp for 30+ street dogs conducted today in Dharavi.', image:'https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?w=400&q=80', time:'Yesterday', likes:88 },
-  { id:4, type:'adoption', name:'Sneha P.', location:'Pune', caption:'Bruno found his forever home today! 3 months on the street and now loved forever 💛', image:'https://images.unsplash.com/photo-1544568100-847a948585b9?w=400&q=80', time:'2 days ago', likes:112 },
-  { id:5, type:'shelter', name:'Paw Seva Volunteers', location:'Delhi', caption:'Set up a temporary shelter for 8 strays near Lajpat Nagar before the rains.', image:'https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&q=80', time:'3 days ago', likes:67 },
-  { id:6, type:'feeding', name:'Amit & Family', location:'Indore, MP', caption:'Sunday feeding drive at Vijay Nagar. Kids loved it too! Teaching compassion early 🙏', image:'https://images.unsplash.com/photo-1582456891705-0e225ff48ddd?w=400&q=80', time:'4 days ago', likes:53 },
+  { id:'s1', type:'feeding',  name:'Ravi Kumar',          location:'Indore, MP',  caption:'Fed 15 stray dogs at Palasia Square today! 🐕',                  image:'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80', time:'2 hours ago', likes:24 },
+  { id:'s2', type:'rescue',   name:'Priya NGO',            location:'Bhopal, MP',  caption:'Rescued an injured puppy near Bharat Talkies, took to the vet.', image:'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&q=80', time:'5 hours ago', likes:41 },
+  { id:'s3', type:'medical',  name:'Dr. Sharma',           location:'Mumbai',      caption:'Free vaccination camp for 30+ street dogs in Dharavi.',            image:'https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?w=400&q=80', time:'Yesterday',   likes:88 },
+  { id:'s4', type:'adoption', name:'Sneha P.',             location:'Pune',        caption:'Bruno found his forever home today! 3 months on street 💛',       image:'https://images.unsplash.com/photo-1544568100-847a948585b9?w=400&q=80', time:'2 days ago',  likes:112 },
+  { id:'s5', type:'shelter',  name:'Paw Seva Volunteers',  location:'Delhi',       caption:'Set up temporary shelter for 8 strays near Lajpat Nagar.',        image:'https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=400&q=80', time:'3 days ago',  likes:67 },
+  { id:'s6', type:'feeding',  name:'Amit & Family',        location:'Indore, MP',  caption:'Sunday feeding drive at Vijay Nagar. Kids loved it! 🙏',         image:'https://images.unsplash.com/photo-1582456891705-0e225ff48ddd?w=400&q=80', time:'4 days ago',  likes:53 },
 ];
 
-let userActivities = JSON.parse(localStorage.getItem('ps_activities') || '[]');
-let displayedCount = 0;
-
-// ── createActivityCard — image properly handle karo ─────────────────────────
-// CHANGE v3: broken image handle, base64 + URL dono support
+// ── createActivityCard ─────────────────────────────────────────────────────────
 function createActivityCard(activity) {
-  const typeLabel = activity.type
-    ? activity.type.charAt(0).toUpperCase() + activity.type.slice(1)
-    : 'Activity';
-  const isLiked = (JSON.parse(localStorage.getItem('ps_liked') || '[]'))
-    .includes(String(activity.id));
+  const typeLabel = activity.type ? activity.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Activity';
+  const isLiked   = (JSON.parse(localStorage.getItem('ps_liked') || '[]')).includes(String(activity.id));
 
-  // Image check — base64 ya valid URL hona chahiye
+  // Image validation — base64 ya valid URL
   const hasImage = activity.image &&
+    typeof activity.image === 'string' &&
     activity.image.length > 10 &&
     activity.image !== window.location.href &&
     activity.image !== 'undefined' &&
     activity.image !== 'null';
 
+  // Caption mein quotes escape karo
+  const safeCaption = (activity.caption || '').replace(/`/g, "'").replace(/"/g, '&quot;');
+  const safeName    = (activity.name    || 'Anonymous').replace(/'/g, '&#39;');
+
   return `
     <div class="activity-card" id="card-${activity.id}">
       ${hasImage
-        ? `<img class="activity-card-img"
-              src="${activity.image}"
-              alt="Activity"
-              loading="lazy"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-           />
-           <div class="activity-card-img-placeholder" style="display:none">
-             ${ACTIVITY_ICONS[activity.type] || '🐾'}
-           </div>`
-        : `<div class="activity-card-img-placeholder">
-             ${ACTIVITY_ICONS[activity.type] || '🐾'}
-           </div>`
+        ? `<img class="activity-card-img" src="${activity.image}" alt="Activity" loading="lazy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+           <div class="activity-card-img-placeholder" style="display:none">${ACTIVITY_ICONS[activity.type] || '🐾'}</div>`
+        : `<div class="activity-card-img-placeholder">${ACTIVITY_ICONS[activity.type] || '🐾'}</div>`
       }
       <div class="activity-card-body">
         <span class="activity-tag ${ACTIVITY_TAG_CLASS[activity.type] || 'tag-feeding'}">
@@ -424,35 +415,33 @@ function createActivityCard(activity) {
           <span>⏰ ${activity.time || 'Just now'}</span>
         </div>
         <div class="activity-card-likes">
-          <button class="like-btn ${isLiked ? 'liked' : ''}"
-            onclick="toggleLike('${activity.id}', this)">
+          <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${activity.id}', this)">
             ❤️ ${activity.likes || 0} Likes
           </button>
-          <button class="like-btn"
-            onclick="shareActivity('${activity.name}', \`${activity.caption}\`)">
+          <button class="like-btn" onclick="shareActivity('${safeName}', '${safeCaption}')">
             🔗 Share
           </button>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ── renderActivityWall — backend se load karo, fallback sample data ────────────
+// ── FIX 1: renderActivityWall — backend se fresh data, turant update ──────────
 async function renderActivityWall() {
   const wall = document.getElementById('activityWall');
   if (!wall) return;
 
-  wall.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#4f8c74">🐾 Loading stories...</div>';
+  wall.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#4f8c74;font-family:DM Sans,sans-serif">🐾 Loading stories...</div>';
 
   try {
-    // CHANGE: cache bust karo har baar fresh data lo
-    const response = await fetch(`${API}/activities?t=${Date.now()}`);
+    const response = await fetch(`${API}/activities?t=${Date.now()}`, {
+      cache: 'no-store',
+    });
     if (!response.ok) throw new Error('Server error');
     const data = await response.json();
 
     if (data.success && data.activities && data.activities.length > 0) {
-      const cards = data.activities.map(a => createActivityCard({
+      wall.innerHTML = data.activities.map(a => createActivityCard({
         id:       a._id,
         type:     a.type     || 'feeding',
         name:     a.name     || 'Anonymous',
@@ -461,12 +450,10 @@ async function renderActivityWall() {
         image:    a.image    || null,
         time:     timeAgo(a.createdAt),
         likes:    a.likes    || 0,
-        likedBy:  a.likedBy  || [],
-      }));
-      wall.innerHTML = cards.join('');
-      return; // backend data mila — return karo
+      })).join('');
+      return;
     }
-    throw new Error('No activities');
+    throw new Error('No activities from server');
   } catch {
     // Fallback — localStorage + sample data
     const stored = JSON.parse(localStorage.getItem('ps_activities') || '[]');
@@ -475,8 +462,10 @@ async function renderActivityWall() {
   }
 }
 
+// ── toggleLike ─────────────────────────────────────────────────────────────────
 async function toggleLike(id, btn) {
-  const userId = getCurrentUser()?.id || localStorage.getItem('ps_device_id') || (() => {
+  const user   = getCurrentUser();
+  const userId = user?.id || localStorage.getItem('ps_device_id') || (() => {
     const d = 'device_' + Date.now();
     localStorage.setItem('ps_device_id', d);
     return d;
@@ -494,39 +483,31 @@ async function toggleLike(id, btn) {
       data.liked ? btn.classList.add('liked') : btn.classList.remove('liked');
     }
   } catch {
-    // Offline fallback
-    const liked = JSON.parse(localStorage.getItem('ps_liked') || '[]');
+    const liked   = JSON.parse(localStorage.getItem('ps_liked') || '[]');
     const isLiked = liked.includes(id);
-    if (isLiked) {
-      liked.splice(liked.indexOf(id), 1);
-      btn.classList.remove('liked');
-    } else {
-      liked.push(id);
-      btn.classList.add('liked');
-    }
+    if (isLiked) { liked.splice(liked.indexOf(id), 1); btn.classList.remove('liked'); }
+    else         { liked.push(id);                     btn.classList.add('liked'); }
     localStorage.setItem('ps_liked', JSON.stringify(liked));
     const count = parseInt(btn.textContent.match(/\d+/)?.[0] || 0);
     btn.textContent = `❤️ ${isLiked ? count - 1 : count + 1} Likes`;
   }
 }
 
-
-
-
+function shareActivity(name, caption) {
+  if (navigator.share) {
+    navigator.share({ title: 'Paw Seva Activity', text: `${name}: ${caption}`, url: window.location.href });
+  } else {
+    navigator.clipboard?.writeText(`${name}: ${caption} — Paw Seva`);
+    showToast('Copied to clipboard! 🔗');
+  }
+}
 
 // ── Upload Modal ───────────────────────────────────────────────────────────────
-// function openUploadModal() {
-//   const u = getCurrentUser();
-//   if (!u) { openModal('signup'); showToast('Please join Paw Seva first to share your story!'); return; }
-//   document.getElementById('uploadModal').classList.add('open');
-//   document.body.style.overflow = 'hidden';
-// }
-
 function openUploadModal() {
   const u = getCurrentUser();
-  if (!u) { openModal('signup'); showToast('Please join Paw Seva first to share your story!'); return; }
+  if (!u) { openModal('signup'); showToast('Please join Paw Seva first! 🐾'); return; }
 
-  // Auto-fill name aur city agar user logged in hai
+  // Auto-fill name + city from logged-in user
   const nameField = document.getElementById('uploaderName');
   const cityField = document.getElementById('activityLocation');
   if (nameField && u.name) nameField.value = u.name;
@@ -536,16 +517,27 @@ function openUploadModal() {
   document.body.style.overflow = 'hidden';
 }
 
-
 function closeUploadModal() {
-  document.getElementById('uploadModal').classList.remove('open');
+  const modal = document.getElementById('uploadModal');
+  if (!modal) return;
+  modal.classList.remove('open');
   document.body.style.overflow = '';
   clearErrors();
-  document.getElementById('photoPreviewArea').style.display = 'none';
-  document.getElementById('photoPreview').src = '';
-  document.getElementById('activityCaption').value = '';
-  document.getElementById('activityLocation').value = '';
-  document.getElementById('uploaderName').value = '';
+
+  // Reset upload form
+  document.getElementById('photoPreviewArea').style.display  = 'none';
+  document.getElementById('photoPreview').src                = '';
+  document.getElementById('activityCaption').value           = '';
+  document.getElementById('activityLocation').value          = '';
+  document.getElementById('uploaderName').value              = '';
+
+  // Reset drop zone
+  const dz = document.getElementById('uploadDropZone');
+  if (dz) dz.style.display = 'block';
+
+  // Reset GPS status
+  const gs = document.getElementById('gpsStatus');
+  if (gs) { gs.textContent = 'Click 📍 to auto-detect your location'; gs.style.color = ''; }
 }
 
 function handlePhotoSelect(event) {
@@ -554,8 +546,8 @@ function handlePhotoSelect(event) {
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById('photoPreview').src = e.target.result;
-    document.getElementById('photoPreviewArea').style.display = 'block';
-    document.getElementById('uploadDropZone').style.display = 'none';
+    document.getElementById('photoPreviewArea').style.display  = 'block';
+    document.getElementById('uploadDropZone').style.display    = 'none';
   };
   reader.readAsDataURL(file);
 }
@@ -564,8 +556,8 @@ function handlePhotoSelect(event) {
 document.addEventListener('DOMContentLoaded', () => {
   const dropZone = document.getElementById('uploadDropZone');
   if (!dropZone) return;
-  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#2f6b57'; });
-  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#c8dfd3'; });
+  dropZone.addEventListener('dragover',  (e) => { e.preventDefault(); dropZone.style.borderColor = '#2f6b57'; });
+  dropZone.addEventListener('dragleave', ()  => { dropZone.style.borderColor = '#c8dfd3'; });
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
@@ -581,8 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-
-// Submit activity function to work and add story for community//
+// ── FIX 1: submitActivity — backend mein save + wall turant reload ─────────────
 async function submitActivity() {
   const caption  = document.getElementById('activityCaption').value.trim();
   const location = document.getElementById('activityLocation').value.trim();
@@ -595,70 +586,59 @@ async function submitActivity() {
   if (!nameVal)  { showError('upload_error', 'Please add your name.'); return; }
 
   const submitBtn = document.querySelector('#uploadModal .btn-form');
-  submitBtn.textContent = 'Sharing...';
-  submitBtn.disabled = true;
+  if (submitBtn) { submitBtn.textContent = '⏳ Sharing...'; submitBtn.disabled = true; }
 
   try {
-    // Image compress karo agar badi hai
     let imageData = null;
     if (preview && preview.startsWith('data:image')) {
-      imageData = preview.length > 500000
-        ? await compressImage(preview, 0.5)
-        : preview;
+      imageData = preview.length > 500000 ? await compressImage(preview, 0.5) : preview;
     }
 
     const response = await fetch(`${API}/activities`, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: nameVal, type, caption, location,
-        image: imageData,
-      }),
+      body:    JSON.stringify({ name: nameVal, type, caption, location, image: imageData }),
     });
 
     const data = await response.json();
 
     if (data.success) {
       closeUploadModal();
-      showToast('Tumhari story share ho gayi! 🐾');
-      displayedCount = 0;
-      await renderActivityWall(); // Reload wall
-      document.getElementById('community').scrollIntoView({ behavior: 'smooth' });
+      showToast('Story shared with the community! 🐾');
+      // Wall turant reload karo — naya story dikhega
+      await renderActivityWall();
+      document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' });
     } else {
       showError('upload_error', data.message || 'Upload failed. Try again.');
     }
-  } catch (err) {
-
-    // Offline fallback 
-    const u = getCurrentUser();
+  } catch {
+    // Offline fallback — localStorage mein save karo
     const newActivity = {
-      id: Date.now(), type, name: nameVal, location, caption,
-      image: preview && preview.startsWith('data:') ? preview : null,
-      time: 'Just now', likes: 0,
+      id:       Date.now(),
+      type, name: nameVal, location, caption,
+      image:    preview && preview.startsWith('data:') ? preview : null,
+      time:     'Just now',
+      likes:    0,
     };
     const stored = JSON.parse(localStorage.getItem('ps_activities') || '[]');
     stored.unshift(newActivity);
     localStorage.setItem('ps_activities', JSON.stringify(stored));
-    displayedCount = 0;
-    renderActivityWall();
     closeUploadModal();
+    await renderActivityWall();
     showToast('Story saved locally! (Backend offline) 🐾');
+    document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' });
   } finally {
-    submitBtn.textContent = 'Share with Community 🐾';
-    submitBtn.disabled = false;
+    if (submitBtn) { submitBtn.textContent = 'Share with Community 🐾'; submitBtn.disabled = false; }
   }
 }
 
-// ── Intersection observer for counter animation ────────────────────────────────
+// ── Counter observer ──────────────────────────────────────────────────────────
 function setupCounterObserver() {
   const statsStrip = document.querySelector('.stats-strip');
   if (!statsStrip) return;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        animateCounters();
-        observer.disconnect();
-      }
+      if (entry.isIntersecting) { animateCounters(); observer.disconnect(); }
     });
   }, { threshold: 0.3 });
   observer.observe(statsStrip);
@@ -672,12 +652,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCounterObserver();
   renderActivityWall();
 
-  // Join btn
+  // Join btn — logged in hone pe dashboard pe bhejo
   document.querySelector('.join-btn')?.addEventListener('click', () => {
     getCurrentUser() ? (window.location.href = 'dashboard.html') : openModal('signup');
   });
 });
 
+// ── Image compress ─────────────────────────────────────────────────────────────
 function compressImage(base64, quality = 0.6) {
   return new Promise((resolve) => {
     const img  = new Image();
@@ -694,44 +675,39 @@ function compressImage(base64, quality = 0.6) {
   });
 }
 
-// ── GPS Location Helper ───────────────────────────────────────────────────────
-// CHANGE v3: GPS se city + address auto-detect karo — no API key needed
+// ── FIX 3: GPS Location Helper ─────────────────────────────────────────────────
+// OpenStreetMap Nominatim — completely free, no API key
 function getLocationFromGPS(callback) {
   if (!navigator.geolocation) {
     showToast('GPS not supported on this device.');
-    callback(null);
-    return;
+    callback(null); return;
   }
   showToast('📍 Detecting your location...');
   navigator.geolocation.getCurrentPosition(
     async (position) => {
       const { latitude, longitude } = position.coords;
       try {
-        const response = await fetch(
+        const res  = await fetch(
           `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
           { headers: { 'Accept-Language': 'en' } }
         );
-        const data  = await response.json();
-        const addr  = data.address || {};
-        const city  = addr.city || addr.town || addr.village || addr.county || addr.state_district || 'Unknown';
-        const state = addr.state   || '';
-        const pincode = addr.postcode || '';
-        const street  = addr.road || addr.neighbourhood || '';
-        const area    = addr.suburb || addr.locality || '';
+        const data = await res.json();
+        const addr = data.address || {};
+        const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || 'Unknown';
+        const state    = addr.state    || '';
+        const pincode  = addr.postcode || '';
+        const street   = addr.road || addr.neighbourhood || '';
+        const area     = addr.suburb || addr.locality || '';
         const fullAddress = [street, area, city, state, pincode].filter(Boolean).join(', ');
         callback({ city, state, pincode, fullAddress, lat: latitude, lon: longitude });
-        showToast(`📍 Location: ${city}, ${state}`);
+        showToast(`📍 ${city}, ${state}`);
       } catch {
         showToast('Could not get address. Enter manually.');
         callback(null);
       }
     },
     (error) => {
-      const msgs = {
-        1: 'Location permission denied. Please allow.',
-        2: 'Location unavailable. Enter manually.',
-        3: 'Request timed out.',
-      };
+      const msgs = { 1: 'Location permission denied.', 2: 'Location unavailable.', 3: 'Request timed out.' };
       showToast(msgs[error.code] || 'GPS error.');
       callback(null);
     },
@@ -739,53 +715,30 @@ function getLocationFromGPS(callback) {
   );
 }
 
-// ── Auto fill city field from GPS ─────────────────────────────────────────────
-// CHANGE v3: GPS se city field auto-fill + status message update
+// ── autoFillCity — GPS se city field fill karo ────────────────────────────────
 function autoFillCity(fieldId) {
   const field = document.getElementById(fieldId);
   if (!field) return;
 
-  // Button dhundo
-  const btn = field.parentElement.querySelector('button');
+  const btn = field.parentElement?.querySelector('button');
   if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
 
-  // Status element ID decide karo
   const statusId = fieldId === 'su_city' ? 'su_gps_status' : 'gpsStatus';
   const statusEl = document.getElementById(statusId);
-  if (statusEl) {
-    statusEl.textContent = '🔍 Detecting location...';
-    statusEl.style.color = '#4f8c74';
-  }
+  if (statusEl) { statusEl.textContent = '🔍 Detecting...'; statusEl.style.color = '#4f8c74'; }
 
   getLocationFromGPS((location) => {
-    // Button restore
     if (btn) { btn.textContent = '📍'; btn.disabled = false; }
-
     if (!location) {
-      if (statusEl) {
-        statusEl.textContent = '❌ Could not detect. Enter manually.';
-        statusEl.style.color = '#e05454';
-      }
+      if (statusEl) { statusEl.textContent = '❌ Could not detect. Enter manually.'; statusEl.style.color = '#e05454'; }
       return;
     }
-
-    // Field fill karo
     field.value = `${location.city}, ${location.state}`;
     field.style.borderColor = '#4f8c74';
+    if (statusEl) { statusEl.textContent = `✅ ${location.fullAddress}`; statusEl.style.color = '#2f6b57'; }
 
-    // Status update
-    if (statusEl) {
-      statusEl.textContent = `✅ ${location.fullAddress}`;
-      statusEl.style.color = '#2f6b57';
-    }
-
-    // localStorage mein city save karo
+    // User ke localStorage mein bhi save karo
     const u = getCurrentUser();
-    if (u) {
-      u.city        = `${location.city}, ${location.state}`;
-      u.fullAddress = location.fullAddress;
-      u.pincode     = location.pincode;
-      setCurrentUser(u);
-    }
+    if (u) { u.city = `${location.city}, ${location.state}`; u.fullAddress = location.fullAddress; setCurrentUser(u); }
   });
 }
