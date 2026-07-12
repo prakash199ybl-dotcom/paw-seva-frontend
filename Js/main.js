@@ -380,11 +380,26 @@ const sampleActivities = [
 ];
 
 // ── createActivityCard ─────────────────────────────────────────────────────────
+// ── createActivityCard — like, share, delete buttons ─────────────────────────
+// CHANGE v4.1: delete button added, liked check fixed
 function createActivityCard(activity) {
-  const typeLabel = activity.type ? activity.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Activity';
-  const isLiked   = (JSON.parse(localStorage.getItem('ps_liked') || '[]')).includes(String(activity.id));
+  const typeLabel = activity.type
+    ? activity.type.charAt(0).toUpperCase() + activity.type.slice(1)
+    : 'Activity';
 
-  // Image validation — base64 ya valid URL
+  // Current user check — apni story pe hi delete button dikhega
+  const currentUser = getCurrentUser();
+  const isOwner = currentUser && (
+    currentUser.name === activity.name ||
+    currentUser.id   === activity.userId
+  );
+
+  // Like check — string comparison for both _id and local id
+  const liked      = JSON.parse(localStorage.getItem('ps_liked') || '[]');
+  const activityId = String(activity.id);
+  const isLiked    = liked.includes(activityId);
+
+  // Image validation
   const hasImage = activity.image &&
     typeof activity.image === 'string' &&
     activity.image.length > 10 &&
@@ -392,12 +407,11 @@ function createActivityCard(activity) {
     activity.image !== 'undefined' &&
     activity.image !== 'null';
 
-  // Caption mein quotes escape karo
   const safeCaption = (activity.caption || '').replace(/`/g, "'").replace(/"/g, '&quot;');
-  const safeName    = (activity.name    || 'Anonymous').replace(/'/g, '&#39;');
+  const safeName    = (activity.name || 'Anonymous').replace(/'/g, '&#39;');
 
   return `
-    <div class="activity-card" id="card-${activity.id}">
+    <div class="activity-card" id="card-${activityId}">
       ${hasImage
         ? `<img class="activity-card-img" src="${activity.image}" alt="Activity" loading="lazy"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
@@ -415,12 +429,22 @@ function createActivityCard(activity) {
           <span>⏰ ${activity.time || 'Just now'}</span>
         </div>
         <div class="activity-card-likes">
-          <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${activity.id}', this)">
-            ❤️ ${activity.likes || 0} Likes
+          <button class="like-btn ${isLiked ? 'liked' : ''}"
+            onclick="toggleLike('${activityId}', this)">
+            ❤️ ${Math.max(0, activity.likes || 0)} Likes
           </button>
-          <button class="like-btn" onclick="shareActivity('${safeName}', '${safeCaption}')">
+          <button class="like-btn"
+            onclick="shareActivity('${safeName}', \`${safeCaption}\`)">
             🔗 Share
           </button>
+          ${isOwner
+            ? `<button class="like-btn"
+                style="color:#e05454;border-color:#e05454"
+                onclick="deleteActivity('${activityId}', this)">
+                🗑️ Delete
+               </button>`
+            : ''
+          }
         </div>
       </div>
     </div>`;
@@ -463,42 +487,55 @@ async function renderActivityWall() {
 }
 
 // ── toggleLike ─────────────────────────────────────────────────────────────────
+// ── toggleLike — FIX: likes never go negative ──────────────────────────────
+// CHANGE v4.1: Math.max(0,...) added, string ID comparison fixed
 async function toggleLike(id, btn) {
   const user   = getCurrentUser();
-  const userId = user?.id || localStorage.getItem('ps_device_id') || (() => {
-    const d = 'device_' + Date.now();
-    localStorage.setItem('ps_device_id', d);
-    return d;
-  })();
+  const userId = user?.id ||
+    localStorage.getItem('ps_device_id') ||
+    (() => {
+      const d = 'device_' + Date.now();
+      localStorage.setItem('ps_device_id', d);
+      return d;
+    })();
+
+  // Prevent double click
+  if (btn.disabled) return;
+  btn.disabled = true;
 
   try {
     const res  = await fetch(`${API}/activities/${id}/like`, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
+      body:    JSON.stringify({ userId }),
     });
     const data = await res.json();
     if (data.success) {
-      btn.textContent = `❤️ ${data.likes} Likes`;
+      btn.textContent = `❤️ ${Math.max(0, data.likes)} Likes`;
       data.liked ? btn.classList.add('liked') : btn.classList.remove('liked');
+
+      // localStorage sync
+      const liked = JSON.parse(localStorage.getItem('ps_liked') || '[]');
+      if (data.liked) { if (!liked.includes(id)) liked.push(id); }
+      else            { const i = liked.indexOf(id); if (i > -1) liked.splice(i, 1); }
+      localStorage.setItem('ps_liked', JSON.stringify(liked));
     }
   } catch {
+    // Offline fallback
     const liked   = JSON.parse(localStorage.getItem('ps_liked') || '[]');
     const isLiked = liked.includes(id);
-    if (isLiked) { liked.splice(liked.indexOf(id), 1); btn.classList.remove('liked'); }
-    else         { liked.push(id);                     btn.classList.add('liked'); }
+    if (isLiked) {
+      liked.splice(liked.indexOf(id), 1);
+      btn.classList.remove('liked');
+    } else {
+      liked.push(id);
+      btn.classList.add('liked');
+    }
     localStorage.setItem('ps_liked', JSON.stringify(liked));
     const count = parseInt(btn.textContent.match(/\d+/)?.[0] || 0);
-    btn.textContent = `❤️ ${isLiked ? count - 1 : count + 1} Likes`;
-  }
-}
-
-function shareActivity(name, caption) {
-  if (navigator.share) {
-    navigator.share({ title: 'Paw Seva Activity', text: `${name}: ${caption}`, url: window.location.href });
-  } else {
-    navigator.clipboard?.writeText(`${name}: ${caption} — Paw Seva`);
-    showToast('Copied to clipboard! 🔗');
+    btn.textContent = `❤️ ${Math.max(0, isLiked ? count - 1 : count + 1)} Likes`;
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -657,6 +694,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     getCurrentUser() ? (window.location.href = 'dashboard.html') : openModal('signup');
   });
 });
+
+// ── deleteActivity — story delete karo ────────────────────────────────────────
+// CHANGE v4.1: new function — uploader apni story delete kar sakta hai
+async function deleteActivity(id, btn) {
+  if (!confirm('Delete this story? This cannot be undone.')) return;
+
+  btn.textContent = '⏳'; btn.disabled = true;
+
+  try {
+    const res  = await fetch(`${API}/activities/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+
+    if (data.success || res.ok) {
+      // Card remove karo smoothly
+      const card = document.getElementById(`card-${id}`);
+      if (card) {
+        card.style.transition = 'opacity 0.3s, transform 0.3s';
+        card.style.opacity    = '0';
+        card.style.transform  = 'scale(0.95)';
+        setTimeout(() => { card.remove(); }, 300);
+      }
+      showToast('Story deleted! 🗑️');
+    } else {
+      btn.textContent = '🗑️ Delete'; btn.disabled = false;
+      showToast(data.message || 'Delete failed.');
+    }
+  } catch {
+    // Offline fallback — localStorage se bhi hatao
+    const stored   = JSON.parse(localStorage.getItem('ps_activities') || '[]');
+    const filtered = stored.filter(a => String(a.id) !== String(id));
+    localStorage.setItem('ps_activities', JSON.stringify(filtered));
+
+    const card = document.getElementById(`card-${id}`);
+    if (card) {
+      card.style.transition = 'opacity 0.3s';
+      card.style.opacity    = '0';
+      setTimeout(() => { card.remove(); }, 300);
+    }
+    showToast('Story deleted! 🗑️');
+  }
+} 
 
 // ── Image compress ─────────────────────────────────────────────────────────────
 function compressImage(base64, quality = 0.6) {
