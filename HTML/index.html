@@ -13,6 +13,7 @@
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>"
     />
     <link rel="stylesheet" href="../CSS/style.css" />
+    <link rel="stylesheet" href="../CSS/stories.css" />
     <style>
       #toast {
         position: fixed;
@@ -98,6 +99,26 @@
         </div>
       </div>
     </nav>
+
+    <!-- ===== STORIES BANNER (v5) — queue khali ho to apne aap hide ===== -->
+<div id="storiesBanner" class="stories-banner" style="display:none">
+  <div class="stories-inner">
+    <div class="stories-head">
+      <span class="stories-title">🐾 Paw Seva Stories</span>
+      <button class="stories-add-btn" onclick="openUploadModal('story')">＋ Add Story</button>
+    </div>
+    <div class="story-player" id="storyPlayer">
+      <div class="story-bg" id="storyBg"></div>
+      <div class="story-media-wrap" id="storyMediaWrap"></div>
+      <div class="story-progress" id="storyProgress"></div>
+      <div class="story-overlay"><div class="story-meta" id="storyMeta"></div></div>
+      <button class="story-nav prev" id="storyPrev" aria-label="Previous">‹</button>
+      <button class="story-nav next" id="storyNext" aria-label="Next">›</button>
+      <button class="story-del" id="storyDel" style="display:none" title="Delete">🗑️</button>
+      <button class="story-mute" id="storyMute" style="display:none" title="Sound">🔇</button>
+    </div>
+  </div>
+</div>
 
     <!-- ===== HERO ===== -->
     <section class="hero" id="home">
@@ -644,180 +665,73 @@
       </div>
     </div>
 
-    <!-- ===== UPLOAD MODAL ===== -->
-    <div class="modal-overlay" id="uploadModal">
-      <div class="modal-box upload-modal-box">
-        <span class="modal-close" onclick="closeUploadModal()">×</span>
-        <div class="modal-logo">📸 <span>Share Your Story</span></div>
-        <p
-          style="
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
-          "
-        >
-          Share your animal feeding, rescue, or care activity!
-        </p>
+ <!-- ===== UPLOAD MODAL (v5: photo/video + Story/Wall option) ===== -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-box upload-modal-box">
+    <span class="modal-close" onclick="closeUploadModal()">×</span>
+    <div class="modal-logo">📸 <span>Share Your Story</span></div>
+    <p style="text-align:center;color:#666;font-size:14px;margin-bottom:20px">Photo ya chhoti video (max 30 sec) share karein!</p>
 
-        <div
-          class="upload-drop-zone"
-          id="uploadDropZone"
-          onclick="document.getElementById('photoFileInput').click()"
-        >
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Click or drag to upload photo</p>
-          <span>JPG, PNG up to 10MB</span>
-        </div>
-        <input
-          type="file"
-          id="photoFileInput"
-          accept="image/*"
-          style="display: none"
-          onchange="handlePhotoSelect(event)"
-        />
-
-        <div
-          id="photoPreviewArea"
-          style="display: none; margin: 16px 0; text-align: center"
-        >
-          <img
-            id="photoPreview"
-            style="
-              max-width: 100%;
-              max-height: 200px;
-              border-radius: 10px;
-              object-fit: cover;
-            "
-          />
-          <button
-            onclick="
-              document.getElementById('photoPreviewArea').style.display =
-                'none';
-              document.getElementById('uploadDropZone').style.display = 'block';
-              document.getElementById('photoPreview').src = '';
-            "
-            style="
-              display: block;
-              margin: 8px auto 0;
-              background: none;
-              border: 1px solid #ccc;
-              border-radius: 8px;
-              padding: 4px 12px;
-              cursor: pointer;
-              font-size: 12px;
-              color: #666;
-            "
-          >
-            × Remove photo
-          </button>
-        </div>
-
-        <div class="form-group" style="margin-top: 14px">
-          <label>Activity Type</label>
-          <select id="activityType">
-            <option value="feeding">🍲 Feeding Animals</option>
-            <option value="rescue">🚨 Rescue Operation</option>
-            <option value="medical">🏥 Medical Care</option>
-            <option value="adoption">🏠 Adoption Drive</option>
-            <option value="shelter">🏕️ Shelter Setup</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Your Name</label>
-          <input
-            type="text"
-            id="uploaderName"
-            placeholder="Your name or community name"
-          />
-        </div>
-        <div class="form-group">
-          <label>Caption / Story</label>
-          <textarea
-            id="activityCaption"
-            rows="3"
-            placeholder="Tell us your story… e.g. Fed 12 street dogs in Vijay Nagar today!"
-            style="
-              width: 100%;
-              padding: 11px 14px;
-              border: 1.5px solid #e0e0e0;
-              border-radius: 9px;
-              font-family: &quot;DM Sans&quot;, sans-serif;
-              font-size: 14px;
-              resize: vertical;
-              outline: none;
-            "
-          ></textarea>
-        </div>
-
-        <!-- FIX 3: City with GPS in upload modal -->
-        <div class="form-group">
-          <label>City / Location</label>
-          <div style="display: flex; gap: 8px; align-items: center">
-            <input
-              type="text"
-              id="activityLocation"
-              placeholder="e.g. Indore, MP"
-              style="
-                flex: 1;
-                padding: 11px 14px;
-                border: 1.5px solid #e0e0e0;
-                border-radius: 9px;
-                font-size: 14px;
-                font-family: &quot;DM Sans&quot;, sans-serif;
-                outline: none;
-                transition: border-color 0.2s;
-                background: #fafafa;
-              "
-              onfocus="this.style.borderColor = '#4f8c74'"
-              onblur="this.style.borderColor = '#e0e0e0'"
-            />
-            <button
-              type="button"
-              onclick="autoFillCity('activityLocation')"
-              title="Auto-detect location"
-              style="
-                padding: 11px 14px;
-                background: #1e4d3f;
-                color: white;
-                border: none;
-                border-radius: 9px;
-                cursor: pointer;
-                font-size: 18px;
-                flex-shrink: 0;
-                transition: background 0.2s;
-              "
-              onmouseover="this.style.background = '#2f6b57'"
-              onmouseout="this.style.background = '#1e4d3f'"
-            >
-              📍
-            </button>
-          </div>
-          <p
-            style="font-size: 11px; color: #7d8590; margin-top: 5px"
-            id="gpsStatus"
-          >
-            Click 📍 to auto-detect your location
-          </p>
-        </div>
-
-        <div
-          id="upload_error"
-          style="
-            color: #e05454;
-            font-size: 13px;
-            margin-bottom: 8px;
-            display: none;
-          "
-        ></div>
-        <button class="btn-form" onclick="submitActivity()">
-          Share with Community 🐾
-        </button>
-      </div>
+    <div class="upload-drop-zone" id="uploadDropZone" onclick="document.getElementById('photoFileInput').click()">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <p>Click or drag to upload photo / video</p>
+      <span>Photo up to 10MB · Video up to 30 sec / 40MB</span>
     </div>
+    <input type="file" id="photoFileInput" accept="image/*,video/*" style="display:none" onchange="handlePhotoSelect(event)" />
+
+    <div id="photoPreviewArea" style="display:none;margin:16px 0;text-align:center">
+      <img id="photoPreview" alt="Preview" style="max-width:100%;max-height:220px;border-radius:10px;object-fit:cover" />
+      <button type="button" onclick="clearSelectedMedia()"
+        style="display:block;margin:8px auto 0;background:none;border:1px solid #ccc;border-radius:8px;padding:4px 12px;cursor:pointer;font-size:12px;color:#666">× Remove</button>
+    </div>
+
+    <div class="form-group" style="margin-top:14px">
+      <label>Post kahan karein?</label>
+      <select id="postTo">
+        <option value="both">📸 Story banner + Community Wall</option>
+        <option value="story">⏱️ Sirf Story banner</option>
+        <option value="wall">🧱 Sirf Community Wall</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Activity Type</label>
+      <select id="activityType">
+        <option value="feeding">🍲 Feeding Animals</option>
+        <option value="rescue">🚨 Rescue Operation</option>
+        <option value="medical">🏥 Medical Care</option>
+        <option value="adoption">🏠 Adoption Drive</option>
+        <option value="shelter">🏕️ Shelter Setup</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="uploaderName" placeholder="Your name or community name" />
+    </div>
+    <div class="form-group">
+      <label>Caption / Story</label>
+      <textarea id="activityCaption" rows="3" placeholder="Tell us your story… e.g. Fed 12 street dogs in Vijay Nagar today!"
+        style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical;outline:none"></textarea>
+    </div>
+    <div class="form-group">
+      <label>City / Location</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="activityLocation" placeholder="e.g. Indore, MP"
+          style="flex:1;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;background:#fafafa"
+          onfocus="this.style.borderColor='#4f8c74'" onblur="this.style.borderColor='#e0e0e0'" />
+        <button type="button" onclick="autoFillCity('activityLocation')" title="Auto-detect location"
+          style="padding:11px 14px;background:#1e4d3f;color:white;border:none;border-radius:9px;cursor:pointer;font-size:18px;flex-shrink:0">📍</button>
+      </div>
+      <p style="font-size:11px;color:#7d8590;margin-top:5px" id="gpsStatus">Click 📍 to auto-detect your location</p>
+    </div>
+
+    <div id="upload_error" style="color:#e05454;font-size:13px;margin-bottom:8px;display:none"></div>
+    <button class="btn-form" onclick="submitActivity()">Share with Community 🐾</button>
+  </div>
+</div>
 
     <div id="toast"></div>
     <script src="../Js/main.js"></script>
+    <script src="../Js/stories.js"></script>
     <script>
       // FIX 2: Page load pe session check — Join Paw Seva hide/show
       window.addEventListener("load", () => {

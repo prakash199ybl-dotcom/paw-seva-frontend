@@ -1,0 +1,33 @@
+/* ============================================================
+   PAW SEVA — stories.css (v5.0) — Stories banner
+   ============================================================ */
+.stories-banner { background: linear-gradient(135deg, #0d2b22, #1e4d3f); padding: 18px 8% 22px; }
+.stories-inner  { max-width: 1100px; margin: 0 auto; }
+.stories-head   { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: #fff; font-family: 'DM Sans', sans-serif; }
+.stories-title  { font-weight: 700; font-size: 16px; letter-spacing: .3px; }
+.stories-add-btn { background: var(--accent); color: #fff; border: none; border-radius: 20px; padding: 7px 16px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; }
+
+.story-player { position: relative; height: 360px; border-radius: 16px; overflow: hidden; background: #000; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: pointer; }
+.story-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(22px) brightness(.55); transform: scale(1.25); }
+.story-media-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.story-media-wrap img, .story-media-wrap video { max-width: 100%; max-height: 100%; height: 100%; width: auto; object-fit: contain; }
+
+.story-progress { position: absolute; top: 10px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 3; }
+.story-progress .seg { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); overflow: hidden; }
+.story-progress .seg i { display: block; height: 100%; width: 0; background: #fff; }
+
+.story-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 14px; background: linear-gradient(to top, rgba(0,0,0,.75), transparent); color: #fff; z-index: 2; pointer-events: none; font-family: 'DM Sans', sans-serif; }
+.story-meta .who   { font-weight: 700; font-size: 14px; }
+.story-meta .where { font-size: 12px; opacity: .85; margin-left: 6px; }
+.story-meta .cap   { font-size: 13px; margin-top: 4px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.story-nav, .story-mute, .story-del { position: absolute; z-index: 4; border: none; background: rgba(0,0,0,.45); color: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 17px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.story-nav.prev { left: 10px;  top: 50%; transform: translateY(-50%); }
+.story-nav.next { right: 10px; top: 50%; transform: translateY(-50%); }
+.story-mute { right: 12px; top: 22px; }
+.story-del  { right: 54px; top: 22px; }
+
+@media (max-width: 768px) {
+  .story-player { height: 300px; }
+  .stories-banner { padding: 14px 4% 18px; }
+}
