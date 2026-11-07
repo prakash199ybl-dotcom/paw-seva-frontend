@@ -867,3 +867,4 @@ footer { background: #1a2e27; color: rgba(255,255,255,0.75); padding: 60px 8% 30
   .community-strip-text { font-size: 12px; }
   .impact-strip { gap: 4px; padding: 16px 5%; }
 }
+.role-opt input[type="radio"] { width: auto; padding: 0; margin: 0; flex-shrink: 0; }

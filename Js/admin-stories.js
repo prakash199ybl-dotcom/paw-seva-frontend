@@ -100,3 +100,17 @@
     };
   }
 })();
+
+// v5.2 — OTP se login kiye hue admin ko bhi panel mein aane do
+document.addEventListener('DOMContentLoaded', async function () {
+  try {
+    const ls = document.getElementById('loginScreen');
+    if (!ls || ls.style.display === 'none') return;     // pehle se andar hai
+    if (!getToken()) return;
+    const { ok, data } = await apiFetch('/auth/me');
+    if (ok && data.user && data.user.role === 'admin') {
+      localStorage.setItem('ps_admin_auth', '1');
+      enterAdminPanel(data.user);
+    }
+  } catch (e) { /* login screen hi rahe */ }
+});

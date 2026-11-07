@@ -1,22 +1,21 @@
 // ============================================================
-//   PAW SEVA — auth-otp.js (v5.1)
+//   PAW SEVA — auth-otp.js (v5.2)
 //   index.html mein main.js ke BAAD load karna hai.
 //
-//   FIX: Login ka OTP ab backend se bheja aur verify kiya jata hai,
-//   isliye user ko REAL token milta hai (story upload/delete chalta hai).
-//   Pehle: backend fail -> fake "demo" session -> upload par
-//   "login session purana hai" error.
+//   v5.1: Login ka OTP backend se bheja/verify hota hai (real token).
+//   v5.2: OTP SMS ya WhatsApp se (channel). WhatsApp button
+//         social-login.js se PawOtp.sendVia('whatsapp') call karta hai.
 //
 //   main.js ka handleLoginOTP yahan override hota hai.
-//   main.js ko edit karne ki zaroorat nahi.
 // ============================================================
 (function () {
   'use strict';
 
   const $ = (id) => document.getElementById(id);
   const NET_MSG = 'Server se connect nahi ho pa raha. 1 minute ruk kar dubara try karein (server sleep se jag raha ho sakta hai).';
+  let nextChannel = 'sms';          // sirf agle OTP request ke liye
 
-  // OTP screen par dikhana ho (testing mode) to hint ke neeche dikhao
+  // Testing mode mein OTP screen par dikhao (real SMS lagne par ye nahi aata)
   function showDevOtp(otp) {
     const hint = document.querySelector('#li_otp_group .otp-hint');
     if (!hint) return;
@@ -33,6 +32,8 @@
   async function handleLoginOTP() {
     // ── Step 1: OTP mangwao ─────────────────────────────────
     if (!otpState.li.sent) {
+      const channel = nextChannel;
+      nextChannel = 'sms';
       const phone = $('li_phone').value.trim();
       if (!/^\d{10}$/.test(phone)) {
         showError('li_error', 'Please enter a valid 10-digit mobile number.');
@@ -43,7 +44,7 @@
       try {
         const { ok, data } = await apiFetch('/auth/send-otp', {
           method: 'POST',
-          body: JSON.stringify({ phone }),
+          body: JSON.stringify({ phone, channel }),
         });
         if (!ok) {
           showError('li_error', data.message || 'OTP nahi bheja ja saka.');
@@ -56,7 +57,9 @@
         setupOTPBoxes('li');
         showDevOtp(data.dev_otp);
         setBtnLoading('li_btn', false, 'Verify OTP ✓');
-        showToast(data.dev_otp ? 'Demo OTP: ' + data.dev_otp : 'OTP aapke mobile par bheja gaya 📱');
+        showToast(data.dev_otp
+          ? 'Demo OTP: ' + data.dev_otp
+          : (channel === 'whatsapp' ? 'OTP aapke WhatsApp par bheja gaya 💬' : 'OTP aapke mobile par bheja gaya 📱'));
         const first = document.querySelector('#li_otp_group .otp-box');
         if (first) first.focus();
       } catch (e) {
@@ -97,4 +100,12 @@
   }
 
   window.handleLoginOTP = handleLoginOTP;
+  // social-login.js ka WhatsApp button isse OTP mangwata hai
+  window.PawOtp = {
+    sendVia: function (channel) {
+      nextChannel = channel === 'whatsapp' ? 'whatsapp' : 'sms';
+      resetOTPState('li');             // purana OTP step hatao, naya bhejo
+      return handleLoginOTP();
+    },
+  };
 })();
